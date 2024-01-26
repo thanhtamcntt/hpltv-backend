@@ -1,12 +1,24 @@
 const router = require('express').Router();
-const { postSignup, postLogin } = require('../../controllers/auth/index');
+const {
+  postSignup,
+  postLogin,
+  postUpdateProfile,
+  postChangePassword,
+  postChangeAvatarProfile,
+  postDeleteAvatarProfile,
+} = require('../../controllers/auth/index');
 const { body } = require('express-validator');
 const User = require('../../models/user');
 const Subscriber = require('../../models/subscriber');
+const CheckToken = require('../../middlewares/checkToken');
+const { upload } = require('../../middlewares/multer');
 
 router.route('/signup').post(
   [
-    body('username', 'Please enter your username at least 5 characters!!')
+    body('firstName', 'Please enter your first name at least 3 characters!!')
+      .trim()
+      .isLength({ min: 3 }),
+    body('lastName', 'Please enter your last name at least 3 characters!!')
       .trim()
       .isLength({ min: 3 }),
     body('email', 'Please enter your email')
@@ -47,4 +59,11 @@ router
     postLogin,
   );
 
+router.route('/profile').patch(CheckToken, postUpdateProfile);
+router.route('/change-password').patch(CheckToken, postChangePassword);
+router
+  .route('/change-avatar')
+  .patch(CheckToken, upload, postChangeAvatarProfile);
+
+router.route('/delete-avatar').patch(CheckToken, postDeleteAvatarProfile);
 module.exports = router;
