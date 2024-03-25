@@ -22,8 +22,7 @@ const CheckToken = AsyncHandler(async (req, res, next) => {
   try {
     const certKey = fs.readFileSync(path.join(__dirname, '../../server.cert'));
     const decoded = jwt.verify(token, certKey);
-    console.log(decoded);
-    req.user = decoded && decoded.userInfo ? decoded.userInfo : decoded.user;
+    req.user = decoded.userInfo;
     next();
   } catch (error) {
     next(new ErrorResponse(`not authorized to access this route`, 401));

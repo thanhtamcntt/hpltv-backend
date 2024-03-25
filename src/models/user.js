@@ -10,6 +10,7 @@ const User = new Schema({
   lastName: {
     type: String,
     required: true,
+    unique: false,
   },
   email: {
     type: String,
@@ -46,7 +47,7 @@ const User = new Schema({
   role: {
     type: String,
     required: true,
-    enum: ['admin', 'manager'],
+    enum: ['superAdmin', 'admin'],
   },
   createAt: {
     type: Date,

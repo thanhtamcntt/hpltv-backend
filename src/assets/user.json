@@ -1,0 +1,30 @@
+[
+  {
+    "firstName": "Loc",
+    "lastName": "Hoang",
+    "email": "locvd111@gmail.com",
+    "phoneNumber": "0919567862",
+    "password": "loc123456",
+    "sex": "male",
+    "avatarUser": {
+      "imageId": "image-webFilm/bn7cwddncp0ls6rlyczw",
+      "url": "https://res.cloudinary.com/dzxupp48t/image/upload/v1705319817/image-webFilm/bn7cwddncp0ls6rlyczw.png"
+    },
+    "role": "superAdmin",
+    "createAt": "2024-03-18T12:00:00.000Z"
+  },
+  {
+    "firstName": "Lam",
+    "lastName": "Nguyen",
+    "email": "lam1919@gmail.com",
+    "phoneNumber": "037890145",
+    "password": "123456",
+    "sex": "male",
+    "avatarUser": {
+      "imageId": "image-webFilm/bn7cwddncp0ls6rlyczw",
+      "url": "https://res.cloudinary.com/dzxupp48t/image/upload/v1705319817/image-webFilm/bn7cwddncp0ls6rlyczw.png"
+    },
+    "role": "admin",
+    "createAt": "2024-03-18T12:00:00.000Z"
+  }
+]
