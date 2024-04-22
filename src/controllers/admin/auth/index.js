@@ -1,5 +1,4 @@
 const User = require('../../../models/user.js');
-const Subscriber = require('../../../models/subscriber.js');
 const AsyncHandler = require('express-async-handler');
 const ErrorResponse = require('../../../utils/errorResponse.js');
 const bcrypt = require('bcryptjs');
@@ -7,9 +6,9 @@ const { validationResult } = require('express-validator');
 const hashToken = require('../../../helpers/signJwtTokenUser.js');
 const path = require('path');
 const fs = require('fs');
+const Subscriber = require('../../../models/subscriber.js');
 
 exports.postLogin = AsyncHandler(async (req, res, next) => {
-  console.log('body', req.body);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log(errors.array()[0].msg);
@@ -48,15 +47,6 @@ exports.postLogin = AsyncHandler(async (req, res, next) => {
   });
 });
 
-exports.getVerifyUserToken = AsyncHandler(async (req, res, next) => {
-  console.log(req.user);
-  res.status(200).json({
-    success: true,
-    userInfo: req.user,
-    version: 1.0,
-  });
-});
-
 exports.postSignup = AsyncHandler(async (req, res, next) => {
   const user = await JSON.parse(
     fs.readFileSync(path.join(__dirname, '../../../assets/user.json')),
@@ -89,5 +79,46 @@ exports.postSignup = AsyncHandler(async (req, res, next) => {
         createAt: Date.now(),
       });
     }
+  });
+});
+
+exports.postResetPassword = AsyncHandler(async (req, res, next) => {
+  console.log(req.body);
+  const hashPassword = await bcrypt.hash('123456', 12);
+  console.log(hashPassword);
+  let user;
+  if (req.body.type === 'user') {
+    user = await User.findById(req.body.userId);
+  } else {
+    user = await Subscriber.findById(req.body.userId);
+  }
+
+  if (!user) {
+    return next(
+      new ErrorResponse(
+        `Cannot find ${req.body.type} id ${req.body.userId}!!`,
+        401,
+      ),
+    );
+  }
+  user.password = hashPassword;
+  await user.save();
+  res.status(200).json({
+    success: true,
+    newPassword: hashPassword,
+    version: 1.0,
+  });
+});
+
+exports.deleteUser = AsyncHandler(async (req, res, next) => {
+  console.log(req.body);
+  if (req.body.type === 'user') {
+    await User.findByIdAndDelete(req.body.userId);
+  } else {
+    await Subscriber.findByIdAndDelete(req.body.userId);
+  }
+  res.status(200).json({
+    success: true,
+    version: 1.0,
   });
 });

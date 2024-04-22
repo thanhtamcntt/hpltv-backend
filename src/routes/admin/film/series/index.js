@@ -1,8 +1,7 @@
 const router = require('express').Router();
-const SeriesController = require('../../../../controllers/user/film/Series/index');
+const SeriesController = require('../../../../controllers/admin/film/Series/index');
 const { upload } = require('../../../../middlewares/multer');
 
-router.route('/').get(SeriesController.getAllSeries);
 
 router.route('/create-series').post(upload, SeriesController.postCreateSeries);
 router

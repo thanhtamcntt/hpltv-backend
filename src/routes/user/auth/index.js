@@ -12,7 +12,8 @@ const { body } = require('express-validator');
 const User = require('../../../models/user');
 const Subscriber = require('../../../models/subscriber');
 const CheckToken = require('../../../middlewares/checkToken');
-const { upload } = require('../../../middlewares/multer');
+// const { upload } = require('../../../middlewares/multer');
+const { upload } = require('../../../helpers/multer');
 
 router.route('/signup').post(
   [

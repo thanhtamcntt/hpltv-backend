@@ -9,7 +9,7 @@ async function hashToken(user) {
   const token = await jwt.sign(
     { user: user, exp: Date.now() + 3600 * 1000 * 24 },
     serverKey,
-    { algorithm: 'RS256' },
+    { algorithm: 'HS256' },
     { expiresIn: '3600 * 24' },
   );
   return token;

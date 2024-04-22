@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
-
 const Schema = require('mongoose').Schema;
+require('dotenv').config();
+
 
 const User = new Schema({
   firstName: {
@@ -35,13 +36,13 @@ const User = new Schema({
     imageId: {
       type: String,
       required: true,
-      default: 'image-webFilm/bn7cwddncp0ls6rlyczw',
+      default: process.env.IMAGE_ID_DEFAULT,
     },
     url: {
       type: String,
       required: true,
       default:
-        'https://res.cloudinary.com/dzxupp48t/image/upload/v1705319817/image-webFilm/bn7cwddncp0ls6rlyczw.png',
+        process.env.IMAGE_URL_DEFAULT,
     },
   },
   role: {
