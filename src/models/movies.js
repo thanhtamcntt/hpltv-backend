@@ -59,6 +59,17 @@ const Movies = new Schema({
   listCategoryId: [
     { type: mongoose.Types.ObjectId, required: true, ref: 'Category' },
   ],
+  listUserIdLike: [
+    { type: mongoose.Types.ObjectId, required: true, ref: 'User' },
+  ],
+  listUserIdRating: [
+    {
+      userId: { type: mongoose.Types.ObjectId, required: true, ref: 'User' },
+      valueRating: { type: Number, required: true },
+    },
+  ],
+  listPackageIdBand: [{ type: mongoose.Types.ObjectId, required: false }],
+  totalRating: { type: Number, required: true, default: 100 },
   createBy: {
     type: mongoose.Types.ObjectId,
     required: true,

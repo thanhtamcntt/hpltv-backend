@@ -27,6 +27,11 @@ const Comment = new Schema({
     required: false,
     ref: 'Movies',
   },
+  rootCommentId: {
+    type: Schema.Types.ObjectId,
+    required: false,
+    ref: 'Movies',
+  },
   createAt: {
     type: Date,
   },
