@@ -19,7 +19,7 @@ exports.postPackageOrder = AsyncHandler(async (req, res, next) => {
   const order = await Order.find({ userId: req.body.userId });
   // console.log('order', order);
   if (order.length < 1) {
-    // console.log('<1');
+    console.log(order.length);
     return res.status(200).json({
       success: false,
       version: 1.0,

@@ -37,7 +37,7 @@ exports.postAddComment = AsyncHandler(async (req, res, next) => {
       createAt: Date.now(),
     });
   }
-
+console.log('newComment', newComment);
   if (newComment) {
     return res.status(200).json({
       data: newComment,

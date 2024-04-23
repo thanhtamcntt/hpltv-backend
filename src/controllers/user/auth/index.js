@@ -4,11 +4,11 @@ const AsyncHandler = require('express-async-handler');
 const ErrorResponse = require('../../../utils/errorResponse.js');
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
-const hashToken = require('../../../helpers/signJwtToken.js');
+const hashToken = require('../../../helpers/signJwtTokenUser.js');
 const {
-  createImageAvatar,
   deleteImageCloud,
 } = require('../../../helpers/uploadImage.js');
+require('dotenv').config();
 
 exports.postLogin = AsyncHandler(async (req, res, next) => {
   console.log('body', req.body);
@@ -16,22 +16,18 @@ exports.postLogin = AsyncHandler(async (req, res, next) => {
   if (!errors.isEmpty()) {
     return next(errors.array(), 401);
   }
-  let admin = false;
-  let newUser;
-  const user = await User.findOne({ email: req.body.email });
-  if (user) {
-    admin = true;
-    newUser = user;
+
+  const user = await Subscriber.findOne({ email: req.body.email });
+
+  if (!user) {
+    return next(
+      new ErrorResponse('Account information or password is incorrect', 401),
+    );
   }
 
-  const subscriber = await Subscriber.findOne({ email: req.body.email });
-  if (subscriber) {
-    newUser = subscriber;
-  }
-  console.log(newUser);
   const hashPassword = await bcrypt.compare(
     req.body.password,
-    newUser.password,
+    user.password,
   );
 
   console.log(hashPassword);
@@ -40,11 +36,20 @@ exports.postLogin = AsyncHandler(async (req, res, next) => {
       new ErrorResponse('Account information or password is incorrect', 401),
     );
   }
-  const token = await hashToken(newUser);
+
+  const userInfo = {
+    userId: user._id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    avatarUser: user.avatarUser,
+    phoneNumber: user.phoneNumber,
+    role: user.role,
+    sex: user.sex,
+  };
+  const token = await hashToken(userInfo);
   res.status(200).json({
-    admin: admin,
     success: true,
-    user: newUser,
     token: token,
     version: 1.0,
   });
@@ -97,7 +102,7 @@ exports.postSignup = AsyncHandler(async (req, res, next) => {
 
 exports.postUpdateProfile = AsyncHandler(async (req, res, next) => {
   const user = await Subscriber.findOne({
-    _id: { $ne: req.user._id },
+    _id: { $ne: req.user.userId },
     $or: [{ email: req.body.email }, { phoneNumber: req.body.phoneNumber }],
   });
   if (user) {
@@ -107,17 +112,25 @@ exports.postUpdateProfile = AsyncHandler(async (req, res, next) => {
       version: 1.0,
     });
   } else {
-    const userUpdate = await Subscriber.findById(req.user._id);
+    const userUpdate = await Subscriber.findById(req.user.userId);
     userUpdate.firstName = req.body.firstName;
     userUpdate.lastName = req.body.lastName;
     userUpdate.email = req.body.email;
     userUpdate.phoneNumber = req.body.phoneNumber;
     userUpdate.sex = req.body.sex;
     await userUpdate.save();
+    const hashUser = {
+      ...userUpdate._doc,
+      userId: req.user.userId
+    }
+    delete hashUser._id;
+    delete hashUser.password;
+    
+    const token = await hashToken(hashUser);
     return res.status(200).json({
-      user: userUpdate,
+      token: token,
       success: true,
-      message: `Update profile user id ${req.user._id} successfully.`,
+      message: `Update profile user id ${req.user.userId} successfully.`,
       version: 1.0,
     });
   }
@@ -132,8 +145,13 @@ exports.postChangePassword = AsyncHandler(async (req, res, next) => {
     );
   }
 
+  const user = await Subscriber.findById(req.user.userId);
+  if (!user) {
+    return next(new ErrorResponse('User not found!!', 401));
+  }
+
   const checkPassword = bcrypt.compare(
-    req.user.password,
+    user.password,
     req.body.currentPassword,
   );
 
@@ -141,10 +159,6 @@ exports.postChangePassword = AsyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Current password is incorrect!!', 401));
   }
 
-  const user = await Subscriber.findById(req.user._id);
-  if (!user) {
-    return next(new ErrorResponse('User not found!!', 401));
-  }
 
   const hashPassword = await bcrypt.hash(req.body.newPassword, 12);
 
@@ -158,54 +172,75 @@ exports.postChangePassword = AsyncHandler(async (req, res, next) => {
   } else {
     user.password = hashPassword;
     await user.save();
+    const hashUser = {
+      ...user._doc,
+      userId: req.user.userId
+    }
+    delete hashUser._id;
+    delete hashUser.password;
+    
+    const token = await hashToken(hashUser);
     return res.status(200).json({
-      user: user,
+      token: token,
       success: true,
-      message: `Change password user id ${req.user._id} successfully.`,
+      message: `Change password user id ${req.user.userId} successfully.`,
       version: 1.0,
     });
   }
 });
 
 exports.postChangeAvatarProfile = AsyncHandler(async (req, res, next) => {
-  const user = await Subscriber.findById(req.user._id);
+  const user = await Subscriber.findById(req.user.userId);
+  console.log(user);
   if (!user) {
     return next(new ErrorResponse('User not found!!', 401));
   }
-  console.log(req.files.imageUrl);
-  if (!req.files.imageUrl) {
+  if (!req.files['imageAvatar']) {
     return next(
       new ErrorResponse(`Please enter a valid file image and video`, 404),
     );
   }
-  const infoImage = await createImageAvatar(req.files.imageUrl);
+  const infoImage = {imageId: req.files['imageAvatar'][0].filename, url: req.files['imageAvatar'][0].path}
 
   user.avatarUser = infoImage;
   await user.save();
+  const hashUser = {
+    ...user._doc,
+    userId: req.user.userId
+  }
+  delete hashUser._id;
+  delete hashUser.password;
+  
+  const token = await hashToken(hashUser);
   return res.status(200).json({
-    imageUpdate: infoImage,
+    token: token,
     success: true,
-    message: `Update avatar profile user id ${req.user._id} successfully.`,
+    message: `Update avatar profile user id ${req.user.userId} successfully.`,
     version: 1.0,
   });
 });
 
 exports.postDeleteAvatarProfile = AsyncHandler(async (req, res, next) => {
-  console.log('req body', req.body);
-  const user = await Subscriber.findById(req.user._id);
+  const user = await Subscriber.findById(req.user.userId);
   if (!user) {
     return next(new ErrorResponse('User not found!!', 401));
   }
   await deleteImageCloud(req.body.imageUser.imageId);
 
-  user.avatarUser.imageId = 'image-webFilm/bn7cwddncp0ls6rlyczw';
-  user.avatarUser.url =
-    'https://res.cloudinary.com/dzxupp48t/image/upload/v1705319817/image-webFilm/bn7cwddncp0ls6rlyczw.png';
+  user.avatarUser.imageId = process.env.IMAGE_ID_DEFAULT;
+  user.avatarUser.url = process.env.IMAGE_URL_DEFAULT;
   await user.save();
+  const hashUser = {
+    ...user._doc,
+    userId: req.user.userId
+  }
+  delete hashUser._id;
+  delete hashUser.password;
+  const token = await hashToken(hashUser);
   return res.status(200).json({
-    imageUpdate: user.avatarUser,
+    token:token,
     success: true,
-    message: `Update avatar profile user id ${req.user._id} successfully.`,
+    message: `Update avatar profile user id ${req.user.userId} successfully.`,
     version: 1.0,
   });
 });

@@ -1,13 +1,14 @@
 const router = require('express').Router();
 
 const { body } = require('express-validator');
-const User = require('../../../models/user');
-const Subscriber = require('../../../models/subscriber');
+
 const CheckToken = require('../../../middlewares/checkToken');
+const checkRoles = require('../../..//middlewares/checkRoles');
 const {
   postSignup,
   postLogin,
-  getVerifyUserToken,
+  postResetPassword,
+  deleteUser,
 } = require('../../../controllers/admin/auth/index');
 
 router
@@ -25,6 +26,7 @@ router
     postLogin,
   );
 router.route('/signup').get(postSignup);
-router.route('/verify-token').get(CheckToken, getVerifyUserToken);
+router.route('/reset-password').post(CheckToken, postResetPassword);
+router.route('/delete-user').post(CheckToken, deleteUser);
 
 module.exports = router;
