@@ -15,11 +15,9 @@ exports.getAllOrder = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postPackageOrder = AsyncHandler(async (req, res, next) => {
-  // console.log('req body', req.body);
-  const order = await Order.find({ userId: req.body.userId });
-  // console.log('order', order);
-  if (order.length < 1) {
-    console.log(order.length);
+  const order = await Order.findOne({ userId: req.body.userId });
+
+  if (!order) {
     return res.status(200).json({
       success: false,
       version: 1.0,
@@ -28,22 +26,16 @@ exports.postPackageOrder = AsyncHandler(async (req, res, next) => {
 
   return res.status(200).json({
     success: true,
-    message: `Find order payment id ${req.user._id} successfully.`,
+    message: `Find order payment id ${req.body.userId} successfully.`,
     version: 1.0,
   });
 });
 
 exports.postAddPaymentUser = AsyncHandler(async (req, res, next) => {
-  console.log('req body', req.body.userId);
-  console.log('req body', req.query);
-  console.log('req body', req.user._id);
-  const user = await Subscriber.findById(req.user._id);
-  console.log('k vô đây');
+  const user = await Subscriber.findById(req.user.userId);
   if (!user) {
-    console.log('k vô đây');
     return next(new ErrorResponse('User not found!!', 401));
   }
-  console.log('user', user);
 
   let order;
   if (req.query.login) {
@@ -62,7 +54,6 @@ exports.postAddPaymentUser = AsyncHandler(async (req, res, next) => {
       expirationDate: Date.now() + 60 * 60 * 24 * 30 * 1000,
     });
   }
-  console.log('vô đây không ??', order);
 
   return res.status(201).json({
     order: order,

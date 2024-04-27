@@ -1,14 +1,11 @@
 const Movies = require('../../../../models/movies');
 const ErrorResponse = require('../../../../utils/errorResponse');
 const AsyncHandler = require('express-async-handler');
-const {
-  deleteImageCloud,
-} = require('../../../../helpers/uploadImage');
-const {
-  deleteVideoCloud,
-} = require('../../../../helpers/uploadVideo');
-const { getVideoDurationInSeconds } = require('get-video-duration')
-
+const { deleteImageCloud } = require('../../../../helpers/uploadImage');
+const { deleteVideoCloud } = require('../../../../helpers/uploadVideo');
+const { getVideoDurationInSeconds } = require('get-video-duration');
+const csv = require('csvtojson');
+const DeleteFile = require('../../../../utils/deleteFile');
 
 exports.postCreateMovies = AsyncHandler(async (req, res, next) => {
   console.log('postCreateMovies', req.body);
@@ -18,11 +15,19 @@ exports.postCreateMovies = AsyncHandler(async (req, res, next) => {
     );
   }
 
-  console.log(req.files['imageUrl'] ,req.files['videoUrl']);
-  const infoImage = {imageId: req.files['imageUrl'][0].filename, url: req.files['imageUrl'][0].path}
-  const infoVideo = { videoId: req.files['videoUrl'][0].filename, url: req.files['videoUrl'][0].path }
+  console.log(req.files['imageUrl'], req.files['videoUrl']);
+  const infoImage = {
+    imageId: req.files['imageUrl'][0].filename,
+    url: req.files['imageUrl'][0].path,
+  };
+  const infoVideo = {
+    videoId: req.files['videoUrl'][0].filename,
+    url: req.files['videoUrl'][0].path,
+  };
 
-  const duration = await getVideoDurationInSeconds(req.files['videoUrl'][0].path)
+  const duration = await getVideoDurationInSeconds(
+    req.files['videoUrl'][0].path,
+  );
   let resultDuration;
   if (duration % 60 < 5) {
     resultDuration = Math.floor(duration / 60);
@@ -72,7 +77,6 @@ exports.postDeleteMovies = AsyncHandler(async (req, res, next) => {
 
   const movies = await Movies.findOne({ _id: req.params.moviesId });
 
-
   if (!movies) {
     return next(
       new ErrorResponse(
@@ -85,7 +89,6 @@ exports.postDeleteMovies = AsyncHandler(async (req, res, next) => {
   await deleteVideoCloud(movies.videoUrl.videoId);
 
   await Movies.deleteOne({ _id: req.params.moviesId });
-
 
   res.status(201).json({
     success: true,
@@ -105,10 +108,18 @@ exports.postUpdateMovies = AsyncHandler(async (req, res, next) => {
   await deleteImageCloud(movies.imageUrl.imageId);
   await deleteVideoCloud(movies.videoUrl.videoId);
 
-  const infoImage = {imageId: req.files['imageUrl'].filename, url: req.files['imageUrl'].path}
-  const infoVideo = { videoId: req.files['videoUrl'][0].filename, url: req.files['videoUrl'][0].path }
+  const infoImage = {
+    imageId: req.files['imageUrl'].filename,
+    url: req.files['imageUrl'].path,
+  };
+  const infoVideo = {
+    videoId: req.files['videoUrl'][0].filename,
+    url: req.files['videoUrl'][0].path,
+  };
 
-  const duration = await getVideoDurationInSeconds(req.files['videoUrl'][0].path)
+  const duration = await getVideoDurationInSeconds(
+    req.files['videoUrl'][0].path,
+  );
   let resultDuration;
   if (duration % 60 < 5) {
     resultDuration = Math.floor(duration / 60);
@@ -233,4 +244,66 @@ exports.postHandleRatingMovies = AsyncHandler(async (req, res, next) => {
       ),
     );
   }
+});
+
+exports.postAddManyMovies = AsyncHandler(async (req, res, next) => {
+  console.log(req.file.path);
+  const jsonArray = await csv().fromFile(req.file.path);
+  console.log(jsonArray);
+  count = 0;
+  Promise.all(
+    jsonArray.map(async (item, id) => {
+      if (
+        item.title === '' ||
+        item.description === '' ||
+        item.imageId === '' ||
+        item.imageUrl === '' ||
+        item.videoId === '' ||
+        item.videoUrl === '' ||
+        item.releaseDate === '' ||
+        item.director === '' ||
+        item.cast === '' ||
+        item.country === '' ||
+        item.duration === '' ||
+        item.productCompany === '' ||
+        item.listCategoryId === ''
+      ) {
+        count = id + 1;
+        return next(
+          new ErrorResponse(
+            `Detect errors in excel data in line numbers ${count}!!`,
+            401,
+          ),
+        );
+      }
+    }),
+  );
+
+  Promise.all(
+    jsonArray.map(async (item, id) => {
+      await Movies.create({
+        title: item.title,
+        releaseDate: item.releaseDate,
+        description: item.description,
+        director: item.director,
+        cast: item.cast,
+        country: item.country,
+        productCompany: item.productCompany,
+        duration: +item.duration,
+        imageUrl: {
+          imageId: item.imageId,
+          url: item.imageUrl,
+        },
+        videoUrl: {
+          videoId: item.videoId,
+          url: item.videoUrl,
+        },
+        createAt: Date.now(),
+        listCategoryId: item.listCategoryId.split(','),
+        createBy: '6543c28ae4b2dbdf546106c3',
+      });
+    }),
+  );
+
+  await DeleteFile(req.file.path);
 });

@@ -23,7 +23,7 @@ router.route('/signup').post(
     body('lastName', 'Please enter your last name at least 3 characters!!')
       .trim()
       .isLength({ min: 3 }),
-    body('email', 'Please enter your email')
+    body('email', 'Please enter email in correct format!!')
       .isEmail()
       .normalizeEmail()
       .custom(async (value, { req }) => {
@@ -52,7 +52,9 @@ router
   .route('/login')
   .post(
     [
-      body('email', 'Please enter your email').isEmail().normalizeEmail(),
+      body('email', 'Please enter email in correct format!!')
+        .isEmail()
+        .normalizeEmail(),
       body('password', 'Please enter your password at least 6 characters!!')
         .trim()
         .isAlphanumeric()

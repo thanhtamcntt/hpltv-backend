@@ -1,20 +1,20 @@
 const Series = require('../../../../models/series');
 const ErrorResponse = require('../../../../utils/errorResponse');
 const AsyncHandler = require('express-async-handler');
-const {
-  deleteImageCloud,
-} = require('../../../../helpers/uploadImage');
-
-
+const { deleteImageCloud } = require('../../../../helpers/uploadImage');
+const csv = require('csvtojson');
+const DeleteFile = require('../../../../utils/deleteFile');
 
 exports.postCreateSeries = AsyncHandler(async (req, res, next) => {
+  console.log('vôdday');
   if (!req.files['imageUrl']) {
     return next(new ErrorResponse(`Please enter a valid file image`, 404));
   }
 
-
-  const infoImage = {imageId: req.files['imageUrl'][0].filename, url: req.files['imageUrl'][0].path}
-
+  const infoImage = {
+    imageId: req.files['imageUrl'][0].filename,
+    url: req.files['imageUrl'][0].path,
+  };
 
   const series = await Series.create({
     title: req.body.title,
@@ -82,7 +82,10 @@ exports.postUpdateSeries = AsyncHandler(async (req, res, next) => {
 
   await deleteImageCloud(series.imageUrl.imageId);
 
-  const infoImage = {imageId: req.files['imageUrl'].filename, url: req.files['imageUrl'].path}
+  const infoImage = {
+    imageId: req.files['imageUrl'].filename,
+    url: req.files['imageUrl'].path,
+  };
 
   series.title = req.body.title;
   series.description = req.body.description;
@@ -97,4 +100,46 @@ exports.postUpdateSeries = AsyncHandler(async (req, res, next) => {
     data: series,
     message: `update series ${req.params.seriesId} successfully`,
   });
+});
+
+exports.posAddManySeries = AsyncHandler(async (req, res, next) => {
+  const jsonArray = await csv().fromFile(req.file.path);
+  console.log(jsonArray);
+  count = 0;
+  Promise.all(
+    jsonArray.map(async (item, id) => {
+      console.log(item);
+      if (
+        item.title === '' ||
+        item.description === '' ||
+        item.imageUrl === '' ||
+        item.listSeriesId === ''
+      ) {
+        count = id + 1;
+        return next(
+          new ErrorResponse(
+            `Detect errors in excel data in line numbers ${count}!!`,
+            401,
+          ),
+        );
+      }
+    }),
+  );
+
+  Promise.all(
+    jsonArray.map(async (item, id) => {
+      await Series.create({
+        title: item.title,
+        description: item.description,
+        imageUrl: JSON.parse(item.imageUrl),
+        listSeriesId:
+          item.listSeriesId !== 'none' ? item.listSeriesId.split(',') : [],
+        createAt: Date.now(),
+        createBy: '6543c28ae4b2dbdf546106c3',
+      });
+    }),
+  );
+
+  console.log('end');
+  await DeleteFile(req.file.path);
 });

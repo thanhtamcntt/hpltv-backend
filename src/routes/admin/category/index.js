@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const CategoryController = require('../../../controllers/admin/category/index');
-
+const { uploadCsv } = require('../../../middlewares/addFileCsv');
 
 router.route('/create-category').post(CategoryController.postCreateCategory);
 router
@@ -9,5 +9,9 @@ router
 router
   .route('/delete-category/:categoryId')
   .post(CategoryController.postDeleteCategory);
+
+router
+  .route('/add-many-category')
+  .post(uploadCsv, CategoryController.posAddManyCategory);
 
 module.exports = router;

@@ -35,8 +35,7 @@ const Subscriber = new Schema({
     url: {
       type: String,
       required: true,
-      default:
-        process.env.IMAGE_URL_DEFAULT,
+      default: process.env.IMAGE_URL_DEFAULT,
     },
   },
   password: {
