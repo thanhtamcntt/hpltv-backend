@@ -1,7 +1,8 @@
 const Category = require('../../../models/category');
 const ErrorResponse = require('../../../utils/errorResponse');
 const AsyncHandler = require('express-async-handler');
-
+const DeleteFile = require('../../../utils/deleteFile');
+const csv = require('csvtojson');
 
 exports.postCreateCategory = AsyncHandler(async (req, res, next) => {
   console.log('body created', req.body);
@@ -65,4 +66,36 @@ exports.postUpdateCategory = AsyncHandler(async (req, res, next) => {
     data: category,
     message: `update category ${req.params.categoryId} successfully`,
   });
+});
+
+exports.posAddManyCategory = AsyncHandler(async (req, res, next) => {
+  const jsonArray = await csv().fromFile(req.file.path);
+  console.log(jsonArray);
+  count = 0;
+  Promise.all(
+    jsonArray.map(async (item, id) => {
+      console.log(item);
+      if (item.title === '') {
+        count = id + 1;
+        return next(
+          new ErrorResponse(
+            `Detect errors in excel data in line numbers ${count}!!`,
+            401,
+          ),
+        );
+      }
+    }),
+  );
+
+  Promise.all(
+    jsonArray.map(async (item, id) => {
+      await Category.create({
+        title: item.title,
+        createAt: Date.now(),
+        createBy: '6543c28ae4b2dbdf546106c3',
+      });
+    }),
+  );
+
+  await DeleteFile(req.file.path);
 });

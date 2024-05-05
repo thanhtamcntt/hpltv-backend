@@ -14,7 +14,6 @@ const CheckToken = AsyncHandler(async (req, res, next) => {
   ) {
     token = req.headers.authorization.split(' ')[1];
   }
-
   if (!token) {
     return next(new ErrorResponse(`not authorized to access this route`, 401));
   }

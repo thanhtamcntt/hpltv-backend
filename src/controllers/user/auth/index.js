@@ -5,35 +5,31 @@ const ErrorResponse = require('../../../utils/errorResponse.js');
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 const hashToken = require('../../../helpers/signJwtTokenUser.js');
-const {
-  deleteImageCloud,
-} = require('../../../helpers/uploadImage.js');
+const { deleteImageCloud } = require('../../../helpers/uploadImage.js');
 require('dotenv').config();
 
 exports.postLogin = AsyncHandler(async (req, res, next) => {
   console.log('body', req.body);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(errors.array(), 401);
+    console.log(errors.array());
+    return next(new ErrorResponse(errors.array()[0].msg, 401));
   }
-
+  console.log('đi tới đây');
   const user = await Subscriber.findOne({ email: req.body.email });
 
   if (!user) {
     return next(
-      new ErrorResponse('Account information or password is incorrect', 401),
+      new ErrorResponse('Account information or password is incorrect!!', 401),
     );
   }
 
-  const hashPassword = await bcrypt.compare(
-    req.body.password,
-    user.password,
-  );
+  const hashPassword = await bcrypt.compare(req.body.password, user.password);
 
   console.log(hashPassword);
   if (!hashPassword) {
     return next(
-      new ErrorResponse('Account information or password is incorrect', 401),
+      new ErrorResponse('Account information or password is incorrect!!', 401),
     );
   }
 
@@ -121,11 +117,11 @@ exports.postUpdateProfile = AsyncHandler(async (req, res, next) => {
     await userUpdate.save();
     const hashUser = {
       ...userUpdate._doc,
-      userId: req.user.userId
-    }
+      userId: req.user.userId,
+    };
     delete hashUser._id;
     delete hashUser.password;
-    
+
     const token = await hashToken(hashUser);
     return res.status(200).json({
       token: token,
@@ -150,15 +146,11 @@ exports.postChangePassword = AsyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('User not found!!', 401));
   }
 
-  const checkPassword = bcrypt.compare(
-    user.password,
-    req.body.currentPassword,
-  );
+  const checkPassword = bcrypt.compare(user.password, req.body.currentPassword);
 
   if (!checkPassword) {
     return next(new ErrorResponse('Current password is incorrect!!', 401));
   }
-
 
   const hashPassword = await bcrypt.hash(req.body.newPassword, 12);
 
@@ -174,11 +166,11 @@ exports.postChangePassword = AsyncHandler(async (req, res, next) => {
     await user.save();
     const hashUser = {
       ...user._doc,
-      userId: req.user.userId
-    }
+      userId: req.user.userId,
+    };
     delete hashUser._id;
     delete hashUser.password;
-    
+
     const token = await hashToken(hashUser);
     return res.status(200).json({
       token: token,
@@ -200,17 +192,20 @@ exports.postChangeAvatarProfile = AsyncHandler(async (req, res, next) => {
       new ErrorResponse(`Please enter a valid file image and video`, 404),
     );
   }
-  const infoImage = {imageId: req.files['imageAvatar'][0].filename, url: req.files['imageAvatar'][0].path}
+  const infoImage = {
+    imageId: req.files['imageAvatar'][0].filename,
+    url: req.files['imageAvatar'][0].path,
+  };
 
   user.avatarUser = infoImage;
   await user.save();
   const hashUser = {
     ...user._doc,
-    userId: req.user.userId
-  }
+    userId: req.user.userId,
+  };
   delete hashUser._id;
   delete hashUser.password;
-  
+
   const token = await hashToken(hashUser);
   return res.status(200).json({
     token: token,
@@ -232,13 +227,13 @@ exports.postDeleteAvatarProfile = AsyncHandler(async (req, res, next) => {
   await user.save();
   const hashUser = {
     ...user._doc,
-    userId: req.user.userId
-  }
+    userId: req.user.userId,
+  };
   delete hashUser._id;
   delete hashUser.password;
   const token = await hashToken(hashUser);
   return res.status(200).json({
-    token:token,
+    token: token,
     success: true,
     message: `Update avatar profile user id ${req.user.userId} successfully.`,
     version: 1.0,

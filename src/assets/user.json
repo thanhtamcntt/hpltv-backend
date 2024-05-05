@@ -7,8 +7,8 @@
     "password": "loc123456",
     "sex": "male",
     "avatarUser": {
-      "imageId": "image-webFilm/bn7cwddncp0ls6rlyczw",
-      "url": "https://res.cloudinary.com/dzxupp48t/image/upload/v1705319817/image-webFilm/bn7cwddncp0ls6rlyczw.png"
+      "imageId": "image-avatar/wxcqrfpkhef33f2rxlfp",
+      "url": "https://res.cloudinary.com/dzxupp48t/image/upload/v1711626829/image-avatar/wxcqrfpkhef33f2rxlfp.png"
     },
     "role": "superAdmin",
     "createAt": "2024-03-18T12:00:00.000Z"
@@ -21,8 +21,8 @@
     "password": "123456",
     "sex": "male",
     "avatarUser": {
-      "imageId": "image-webFilm/bn7cwddncp0ls6rlyczw",
-      "url": "https://res.cloudinary.com/dzxupp48t/image/upload/v1705319817/image-webFilm/bn7cwddncp0ls6rlyczw.png"
+      "imageId": "image-avatar/wxcqrfpkhef33f2rxlfp",
+      "url": "https://res.cloudinary.com/dzxupp48t/image/upload/v1711626829/image-avatar/wxcqrfpkhef33f2rxlfp.png"
     },
     "role": "admin",
     "createAt": "2024-03-18T12:00:00.000Z"

@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 const Schema = require('mongoose').Schema;
 require('dotenv').config();
 
-
 const User = new Schema({
   firstName: {
     type: String,
     required: true,
+    unique: false,
   },
   lastName: {
     type: String,
@@ -41,8 +41,7 @@ const User = new Schema({
     url: {
       type: String,
       required: true,
-      default:
-        process.env.IMAGE_URL_DEFAULT,
+      default: process.env.IMAGE_URL_DEFAULT,
     },
   },
   role: {
