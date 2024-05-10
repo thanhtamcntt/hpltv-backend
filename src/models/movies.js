@@ -31,7 +31,7 @@ const Movies = new Schema({
     },
   },
   releaseDate: {
-    type: Date,
+    type: Number,
     required: true,
   },
   director: {
@@ -49,7 +49,6 @@ const Movies = new Schema({
   duration: { type: Number, required: true },
   rating: { type: Number, required: true, default: 5 },
   view: { type: Number, required: true, default: 5000 },
-  productCompany: { type: String, required: true },
   createAt: {
     type: Date,
   },
@@ -70,6 +69,11 @@ const Movies = new Schema({
   ],
   listPackageIdBand: [{ type: mongoose.Types.ObjectId, required: false }],
   totalRating: { type: Number, required: true, default: 100 },
+  isDelete: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
   createBy: {
     type: mongoose.Types.ObjectId,
     required: true,

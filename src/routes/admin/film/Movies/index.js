@@ -10,7 +10,7 @@ router
   .post(CheckToken, upload, MoviesController.postCreateMovies);
 router
   .route('/delete-movies/:moviesId')
-  .post(upload, MoviesController.postDeleteMovies);
+  .post(MoviesController.postDeleteMovies);
 
 router
   .route('/update-movies/:moviesId')
@@ -20,5 +20,6 @@ router
   .route('/add-many-movies')
   .post(uploadCsv, MoviesController.postAddManyMovies);
 // router.route('/test').get(MoviesController.getMovieTest);
+router.route('/recover-movies').post(MoviesController.postRecoverMovies);
 
 module.exports = router;
