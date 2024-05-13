@@ -20,8 +20,31 @@ const Series = new Schema({
       required: true,
     },
   },
-  listSeriesId: [{ type: mongoose.Types.ObjectId, required: false }],
+  releaseDate: {
+    type: Number,
+    required: true,
+  },
+  director: {
+    type: String,
+    required: true,
+  },
+  cast: {
+    type: String,
+    required: true,
+  },
+  country: {
+    type: String,
+    required: true,
+  },
+  listCategoryId: [
+    { type: mongoose.Types.ObjectId, required: true, ref: 'Category' },
+  ],
   rating: { type: Number, required: true, default: 4.8 },
+  isDelete: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
   createAt: {
     type: Date,
   },

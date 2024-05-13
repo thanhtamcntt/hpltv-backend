@@ -42,10 +42,26 @@ const Subscriber = new Schema({
     type: String,
     required: true,
   },
+  isBanned: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  isDelete: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
   createAt: {
     type: Date,
   },
   updateAt: {
+    type: Date,
+  },
+  createAtBanned: {
+    type: Date,
+  },
+  createAtDelete: {
     type: Date,
   },
 });

@@ -42,7 +42,6 @@ exports.postCreateMovies = AsyncHandler(async (req, res, next) => {
     director: req.body.director,
     cast: req.body.cast,
     country: req.body.country,
-    productCompany: req.body.productCompany,
     duration: resultDuration,
     imageUrl: infoImage,
     videoUrl: infoVideo,
@@ -69,10 +68,14 @@ exports.postCreateMovies = AsyncHandler(async (req, res, next) => {
 
 exports.postDeleteMovies = AsyncHandler(async (req, res, next) => {
   console.log(req.params);
+  console.log(req.body);
   if (!req.params.moviesId) {
     return next(
       new ErrorResponse(`Please enter a valid id movies delete`, 404),
     );
+  }
+  if (!req.body.type) {
+    return next(new ErrorResponse(`Please send type movies delete`, 404));
   }
 
   const movies = await Movies.findOne({ _id: req.params.moviesId });
@@ -85,14 +88,17 @@ exports.postDeleteMovies = AsyncHandler(async (req, res, next) => {
       ),
     );
   }
-  await deleteImageCloud(movies.imageUrl.imageId);
-  await deleteVideoCloud(movies.videoUrl.videoId);
-
-  await Movies.deleteOne({ _id: req.params.moviesId });
+  if (req.body.type === 'delete') {
+    movies.isDelete = true;
+    await movies.save();
+  } else {
+    await deleteImageCloud(movies.imageUrl.imageId);
+    await deleteVideoCloud(movies.videoUrl.videoId);
+    await Movies.deleteOne({ _id: req.params.moviesId });
+  }
 
   res.status(201).json({
     success: true,
-    data: movies,
     message: `delete movies ${req.params.moviesId} successfully`,
   });
 });
@@ -133,7 +139,6 @@ exports.postUpdateMovies = AsyncHandler(async (req, res, next) => {
   movies.director = req.body.director;
   movies.cast = req.body.cast;
   movies.country = req.body.country;
-  movies.productCompany = req.body.productCompany;
   movies.duration = resultDuration;
   movies.imageUrl = infoImage;
   movies.videoUrl = infoVideo;
@@ -306,4 +311,21 @@ exports.postAddManyMovies = AsyncHandler(async (req, res, next) => {
   );
 
   await DeleteFile(req.file.path);
+});
+
+exports.postRecoverMovies = AsyncHandler(async (req, res, next) => {
+  console.log(req.body);
+  const movies = await Movies.findById(req.body.dataId);
+
+  if (!movies) {
+    return next(
+      new ErrorResponse(`Cannot find movies id ${req.body.dataId}!!`, 401),
+    );
+  }
+  movies.isDelete = false;
+  await movies.save();
+  res.status(200).json({
+    success: true,
+    message: 'Changed the status movies successfully',
+  });
 });
