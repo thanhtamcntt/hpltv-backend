@@ -24,12 +24,23 @@ exports.getAllSubscriber = AsyncHandler(async (req, res, next) => {
 
 exports.getSubscriberToday = AsyncHandler(async (req, res, next) => {
   const currentDate = new Date();
-  const dateOnly = new Date(
+  const startOfDay = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth(),
     currentDate.getDate(),
   );
-  const subscriber = await Subscriber.find({ createAt: dateOnly })
+  const endOfDay = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    currentDate.getDate() + 1,
+  );
+
+  const subscriber = await Subscriber.find({
+    createAt: {
+      $gte: startOfDay,
+      $lt: endOfDay,
+    },
+  })
     .sort({ createAt: -1 })
     .limit(10);
 
@@ -42,19 +53,29 @@ exports.getSubscriberToday = AsyncHandler(async (req, res, next) => {
 
 exports.getSubscriberOrderToday = AsyncHandler(async (req, res, next) => {
   const currentDate = new Date();
-  const dateOnly = new Date(
+  const startOfDay = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth(),
     currentDate.getDate(),
   );
-  const order = await Order.find({ createAt: dateOnly })
+  const endOfDay = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    currentDate.getDate() + 1,
+  );
+
+  const order = await Order.find({
+    createAt: {
+      $gte: startOfDay,
+      $lt: endOfDay,
+    },
+  })
     .populate('userId')
     .sort({ createAt: -1 })
     .limit(10);
 
   let data = [];
   for (let i = 0; i < order.length; i++) {
-    console.log(order[i]);
     const obj = {
       firstName: order[i].userId.firstName,
       lastName: order[i].userId.lastName,

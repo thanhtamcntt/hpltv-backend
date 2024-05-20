@@ -95,7 +95,6 @@ exports.getCountRegisterAndPurchasesCurrentYearAndMonth = AsyncHandler(
     const order = await Order.find();
     let data = [];
     const currentDate = new Date();
-    console.log(currentDate.getMonth());
     let count = 0,
       countMonth = 0,
       total = 0,

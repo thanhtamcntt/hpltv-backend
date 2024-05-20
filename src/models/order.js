@@ -11,7 +11,11 @@ const Order = new Schema({
     required: true,
     ref: 'Subscriber',
   },
-
+  isDelete: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
   createAt: {
     type: Date,
   },

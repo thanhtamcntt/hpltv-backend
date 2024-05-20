@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const SeriesController = require('../../../../controllers/admin/film/Series/index');
-const FilmForSeriesRouter = require('./filmForSeries/index');
+const FilmForSeriesRouter = require('../filmForSeries/index');
 const { upload } = require('../../../../helpers/multer');
 const { uploadCsv } = require('../../../../middlewares/addFileCsv');
 

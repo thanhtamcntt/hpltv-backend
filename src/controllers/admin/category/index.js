@@ -25,6 +25,7 @@ exports.postCreateCategory = AsyncHandler(async (req, res, next) => {
     message: 'Create category successfully',
   });
 });
+
 exports.postDeleteCategory = AsyncHandler(async (req, res, next) => {
   console.log(req.params);
   if (!req.params.categoryId) {

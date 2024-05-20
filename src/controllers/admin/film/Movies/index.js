@@ -8,7 +8,6 @@ const csv = require('csvtojson');
 const DeleteFile = require('../../../../utils/deleteFile');
 
 exports.postCreateMovies = AsyncHandler(async (req, res, next) => {
-  console.log('postCreateMovies', req.body);
   if (!req.files['imageUrl'] || !req.files['videoUrl']) {
     return next(
       new ErrorResponse(`Please enter a valid file image and video`, 404),
@@ -67,8 +66,6 @@ exports.postCreateMovies = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postDeleteMovies = AsyncHandler(async (req, res, next) => {
-  console.log(req.params);
-  console.log(req.body);
   if (!req.params.moviesId) {
     return next(
       new ErrorResponse(`Please enter a valid id movies delete`, 404),
@@ -78,14 +75,11 @@ exports.postDeleteMovies = AsyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(`Please send type movies delete`, 404));
   }
 
-  const movies = await Movies.findOne({ _id: req.params.moviesId });
+  const movies = await Movies.findById(req.params.moviesId);
 
   if (!movies) {
     return next(
-      new ErrorResponse(
-        `The system is experiencing problems, please try again later!!`,
-        401,
-      ),
+      new ErrorResponse(`Cannot find movies id ${req.params.moviesId}!!`, 401),
     );
   }
   if (req.body.type === 'delete') {
@@ -154,7 +148,6 @@ exports.postUpdateMovies = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postHandleLikeMovies = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
   const movies = await Movies.findById(req.body.filmId);
   if (!movies) {
     return next(
@@ -177,15 +170,12 @@ exports.postHandleLikeMovies = AsyncHandler(async (req, res, next) => {
       );
     }
 
-    console.log(updatedDocument);
-
     res.status(201).json({
       success: true,
       data: updatedDocument,
       message: `Update list id user like movies ${req.body.filmId} successfully`,
     });
   } catch (err) {
-    console.error(err);
     return next(
       new ErrorResponse(`Error updating movies: ${err.message}`, 500),
     );
@@ -228,15 +218,12 @@ exports.postHandleRatingMovies = AsyncHandler(async (req, res, next) => {
         { new: true },
       );
 
-      console.log('update document nè:', updatedDocument);
-
       res.status(201).json({
         success: true,
         data: updatedDocument,
         message: `Update list id user like movies ${req.body.filmId} successfully`,
       });
     } catch (err) {
-      console.error(err);
       return next(
         new ErrorResponse(`Error updating movies: ${err.message}`, 500),
       );
@@ -252,9 +239,7 @@ exports.postHandleRatingMovies = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postAddManyMovies = AsyncHandler(async (req, res, next) => {
-  console.log(req.file.path);
   const jsonArray = await csv().fromFile(req.file.path);
-  console.log(jsonArray);
   count = 0;
   Promise.all(
     jsonArray.map(async (item, id) => {
@@ -270,7 +255,6 @@ exports.postAddManyMovies = AsyncHandler(async (req, res, next) => {
         item.cast === '' ||
         item.country === '' ||
         item.duration === '' ||
-        item.productCompany === '' ||
         item.listCategoryId === ''
       ) {
         count = id + 1;
@@ -288,12 +272,11 @@ exports.postAddManyMovies = AsyncHandler(async (req, res, next) => {
     jsonArray.map(async (item, id) => {
       await Movies.create({
         title: item.title,
-        releaseDate: item.releaseDate,
+        releaseDate: +item.releaseDate,
         description: item.description,
         director: item.director,
         cast: item.cast,
         country: item.country,
-        productCompany: item.productCompany,
         duration: +item.duration,
         imageUrl: {
           imageId: item.imageId,
@@ -311,6 +294,12 @@ exports.postAddManyMovies = AsyncHandler(async (req, res, next) => {
   );
 
   await DeleteFile(req.file.path);
+  // const movies = await Movies.find();
+  // res.status(201).json({
+  //   success: true,
+  //   data: movies,
+  //   message: 'Create movies successfully',
+  // });
 });
 
 exports.postRecoverMovies = AsyncHandler(async (req, res, next) => {
