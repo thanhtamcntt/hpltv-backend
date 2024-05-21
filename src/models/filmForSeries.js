@@ -2,11 +2,10 @@ const mongoose = require('mongoose');
 const Schema = require('mongoose').Schema;
 
 const FilmForSeries = new Schema({
-  title: {
-    type: String,
+  releaseDate: {
+    type: Number,
     required: true,
   },
-
   videoUrl: {
     videoId: {
       type: String,
@@ -17,8 +16,9 @@ const FilmForSeries = new Schema({
       required: true,
     },
   },
+  filmSerialNumber: { type: Number, required: true },
   duration: { type: Number, required: true },
-  view: { type: Number, required: true, default: 5000 },
+  // view: { type: Number, required: true, default: 5000 },
   createAt: {
     type: Date,
   },
@@ -29,6 +29,11 @@ const FilmForSeries = new Schema({
     type: Boolean,
     required: true,
     default: false,
+  },
+  seriesId: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: 'Series',
   },
   createBy: {
     type: mongoose.Types.ObjectId,

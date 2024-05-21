@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const MoviesController = require('../../../../controllers/admin/film/Movies/index');
-const { upload } = require('../../../../middlewares/multer');
+const { upload } = require('../../../../helpers/multer');
 const CheckToken = require('../../../../middlewares/checkToken');
 const CheckRoles = require('../../../../middlewares/checkRoles');
 const { uploadCsv } = require('../../../../middlewares/addFileCsv');
@@ -10,7 +10,7 @@ router
   .post(CheckToken, upload, MoviesController.postCreateMovies);
 router
   .route('/delete-movies/:moviesId')
-  .post(MoviesController.postDeleteMovies);
+  .post(CheckToken, MoviesController.postDeleteMovies);
 
 router
   .route('/update-movies/:moviesId')
@@ -19,7 +19,6 @@ router
 router
   .route('/add-many-movies')
   .post(uploadCsv, MoviesController.postAddManyMovies);
-// router.route('/test').get(MoviesController.getMovieTest);
 router.route('/recover-movies').post(MoviesController.postRecoverMovies);
 
 module.exports = router;

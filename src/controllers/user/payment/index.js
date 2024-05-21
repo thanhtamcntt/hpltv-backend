@@ -1,5 +1,4 @@
 const AsyncHandler = require('express-async-handler');
-
 const fs = require('fs');
 const path = require('path');
 const stripe = require('stripe')(
@@ -18,8 +17,6 @@ exports.getPayment = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postPayment = AsyncHandler(async (req, res, next) => {
-  // console.log(req.body);
-
   const paymentIntent = await stripe.paymentIntents.create({
     amount: req.body.monthlyPrice * 100,
     currency: 'usd',

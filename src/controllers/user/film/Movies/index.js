@@ -1,13 +1,6 @@
 const Movies = require('../../../../models/movies');
 const ErrorResponse = require('../../../../utils/errorResponse');
 const AsyncHandler = require('express-async-handler');
-const {
-  deleteImageCloud,
-} = require('../../../../helpers/uploadImage');
-const {
-  deleteVideoCloud,
-} = require('../../../../helpers/uploadVideo');
-const { getVideoDurationInSeconds } = require('get-video-duration')
 
 exports.getAllMovies = async (req, res, next) => {
   const movies = await Movies.find().sort({ createAt: -1 });
@@ -84,8 +77,6 @@ exports.getMoviesCanWantToMatch = async (req, res, next) => {
     message: `Get movies feature successfully.`,
   });
 };
-
-
 
 exports.postHandleLikeMovies = AsyncHandler(async (req, res, next) => {
   console.log(req.body);

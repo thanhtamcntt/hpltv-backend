@@ -29,3 +29,26 @@ exports.getAllCategoryFromPage = async (req, res, next) => {
     message: `Get all category successfully.`,
   });
 };
+
+exports.getAllCategoryFetchLook = async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const name = req.query.name;
+  let count, category;
+  count = await Category.find({
+    name: { $regex: `.*${name}.*`, $options: 'i' },
+  }).sort({ createAt: -1 });
+  category = await Category.find({
+    name: { $regex: `.*${name}.*`, $options: 'i' },
+  })
+    .sort({ createAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  res.status(200).json({
+    data: category,
+    success: true,
+    count: count.length,
+    message: `Get all series successfully.`,
+  });
+};

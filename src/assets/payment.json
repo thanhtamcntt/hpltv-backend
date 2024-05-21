@@ -1,6 +1,5 @@
 [
   {
-    "_id": "6543c28ae4b2dbdf54610f89",
     "typePack": "High",
     "monthlyPrice": "165",
     "qualityPicture": "The best",
@@ -11,7 +10,6 @@
     "quantityDownload": "6"
   },
   {
-    "_id": "6543c28ae4b2dbdf54610f90",
     "typePack": "Standard",
     "monthlyPrice": "115",
     "qualityPicture": "Great",
@@ -21,7 +19,6 @@
     "quantityDownload": "2"
   },
   {
-    "_id": "6543c28ae4b2dbdf54610f91",
     "typePack": "Basic",
     "monthlyPrice": "70",
     "qualityPicture": "Good",
@@ -31,7 +28,6 @@
     "quantityDownload": "1"
   },
   {
-    "_id": "6543c28ae4b2dbdf54610f92",
     "typePack": "Mobile",
     "monthlyPrice": "30",
     "qualityPicture": "Rather",

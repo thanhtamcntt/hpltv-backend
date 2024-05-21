@@ -3,5 +3,6 @@ const MoviesController = require('../../../../controllers/common/film/Movies/ind
 
 router.route('/').get(MoviesController.getAllMovies);
 router.route('/from-page').get(MoviesController.getAllMoviesFromPage);
+router.route('/fetch-look').get(MoviesController.getAllMoviesFetchLook);
 
 module.exports = router;
