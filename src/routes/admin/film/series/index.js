@@ -15,10 +15,6 @@ router
   .route('/update-series/:seriesId')
   .patch(upload, SeriesController.postUpdateSeries);
 
-router
-  .route('/add-many-series')
-  .post(uploadCsv, SeriesController.posAddManySeries);
-
 router.route('/recover-series').post(SeriesController.postRecoverSeries);
 
 module.exports = router;

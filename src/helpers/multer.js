@@ -12,7 +12,7 @@ const storage = new CloudinaryStorage({
     } else {
       resourceType = 'image';
     }
-    if (file.fieldname === 'imageUrl') {
+    if (file.fieldname === 'imageUrl' || file.fieldname === 'imageUrlBanner') {
       folderName = 'image-webFilm';
     } else {
       folderName = 'image-avatar';
@@ -27,6 +27,7 @@ const storage = new CloudinaryStorage({
 });
 
 const upload = multer({ storage: storage }).fields([
+  { name: 'imageUrlBanner' },
   { name: 'imageUrl' },
   { name: 'videoUrl' },
   { name: 'imageAvatar' },

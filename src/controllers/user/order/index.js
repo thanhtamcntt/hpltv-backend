@@ -4,7 +4,7 @@ const Subscriber = require('../../../models/subscriber');
 const ErrorResponse = require('../../../utils/errorResponse');
 
 exports.getAllOrder = AsyncHandler(async (req, res, next) => {
-  const order = await Order.find();
+  const order = await Order.find().populate('packageId');
 
   return res.status(200).json({
     data: order,
@@ -42,21 +42,22 @@ exports.postAddPaymentUser = AsyncHandler(async (req, res, next) => {
     await Order.deleteOne({ userId: req.body.userId });
     order = await Order.create({
       userId: req.body.userId,
-      information: req.body.dataPayment,
+      packageId: req.body.packageId,
       createAt: Date.now(),
       expirationDate: Date.now() + 60 * 60 * 24 * 30 * 1000,
     });
   } else {
     order = await Order.create({
       userId: req.body.userId,
-      information: req.body.dataPayment,
+      packageId: req.body.packageId,
       createAt: Date.now(),
       expirationDate: Date.now() + 60 * 60 * 24 * 30 * 1000,
     });
   }
-
+  console.log('data đâu', order);
+  let dataOrder = await Order.findById(order._id).populate('packageId');
   return res.status(201).json({
-    order: order,
+    order: dataOrder,
     success: true,
     message: `Create order payment id ${req.user._id} successfully.`,
     version: 1.0,

@@ -10,6 +10,16 @@ const Series = new Schema({
     type: String,
     required: true,
   },
+  imageUrlBanner: {
+    imageId: {
+      type: String,
+      required: true,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+  },
   imageUrl: {
     imageId: {
       type: String,
@@ -32,14 +42,22 @@ const Series = new Schema({
     type: String,
     required: true,
   },
-  country: {
-    type: String,
-    required: true,
-  },
+  country: [{ type: String, required: true }],
   listCategoryId: [
     { type: mongoose.Types.ObjectId, required: true, ref: 'Category' },
   ],
-  rating: { type: Number, required: true, default: 4.8 },
+  listUserIdLike: [
+    { type: mongoose.Types.ObjectId, required: true, ref: 'User' },
+  ],
+  listUserIdRating: [
+    {
+      userId: { type: mongoose.Types.ObjectId, required: true, ref: 'User' },
+      valueRating: { type: Number, required: true },
+    },
+  ],
+  listPackageIdBand: [{ type: mongoose.Types.ObjectId, required: false }],
+  totalRating: { type: Number, required: true, default: 100 },
+  rating: { type: Number, required: true, default: 5 },
   isDelete: {
     type: Boolean,
     required: true,
@@ -47,14 +65,6 @@ const Series = new Schema({
   },
   createAt: {
     type: Date,
-  },
-  updateAt: {
-    type: Date,
-  },
-  createBy: {
-    type: mongoose.Types.ObjectId,
-    required: true,
-    ref: 'User',
   },
 });
 

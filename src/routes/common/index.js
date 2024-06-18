@@ -3,10 +3,17 @@ const authRouter = require('./auth/index');
 const filmRouter = require('./film/index');
 const categoryRouter = require('./category/index');
 const paymentRouter = require('./payment/index');
+const packageRouter = require('./package/index');
+const commonQuestionRouter = require('./setting/commonQuestion');
+const customerQuestionRouter = require('./setting/customerQuestion');
 
 router.use('/auth', authRouter);
 router.use('/film', filmRouter);
 router.use('/category', categoryRouter);
 router.use('/payment', paymentRouter);
+router.use('/payment', paymentRouter);
+router.use('/package', packageRouter);
+router.use('/common-questions', commonQuestionRouter);
+router.use('/customer-questions', customerQuestionRouter);
 
 module.exports = router;

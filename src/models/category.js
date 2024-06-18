@@ -12,12 +12,6 @@ const Category = new Schema({
   updateAt: {
     type: Date,
   },
-
-  createBy: {
-    type: mongoose.Types.ObjectId,
-    required: true,
-    ref: 'User',
-  },
 });
 
 module.exports = mongoose.model('Category', Category);
