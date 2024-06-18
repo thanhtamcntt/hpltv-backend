@@ -7,7 +7,7 @@ const {
 } = require('../../../controllers/user/order/index');
 
 router.route('/').get(CheckToken, getAllOrder);
-router.route('/get-package-order').post(CheckToken, postPackageOrder);
+router.route('/post-package-order').post(CheckToken, postPackageOrder);
 router.route('/subscription-package').post(CheckToken, postAddPaymentUser);
 
 module.exports = router;

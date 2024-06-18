@@ -1,4 +1,6 @@
 const Category = require('../../../models/category');
+const Movies = require('../../../models/movies');
+const Series = require('../../../models/series');
 const ErrorResponse = require('../../../utils/errorResponse');
 const AsyncHandler = require('express-async-handler');
 const DeleteFile = require('../../../utils/deleteFile');
@@ -9,7 +11,6 @@ exports.postCreateCategory = AsyncHandler(async (req, res, next) => {
   const category = await Category.create({
     name: req.body.name,
     createAt: Date.now(),
-    createBy: '6543c28ae4b2dbdf546106c3',
   });
   if (!category) {
     return next(
@@ -33,15 +34,26 @@ exports.postDeleteCategory = AsyncHandler(async (req, res, next) => {
       new ErrorResponse(`Please enter a valid id category delete`, 404),
     );
   }
-  const category = await Category.deleteOne({ _id: req.params.categoryId });
+  const category = await Category.findOne({ _id: req.params.categoryId });
   if (!category) {
     return next(
       new ErrorResponse(
-        `The system is experiencing problems, please try again later!!`,
+        `Cannot find category id ${req.params.categoryId}!!`,
         401,
       ),
     );
   }
+
+  await Movies.updateMany(
+    { listCategoryId: req.params.categoryId },
+    { $pull: { listCategoryId: req.params.categoryId } },
+  );
+  await Series.updateMany(
+    { listCategoryId: req.params.categoryId },
+    { $pull: { listCategoryId: req.params.categoryId } },
+  );
+
+  await Category.deleteOne({ _id: req.params.categoryId });
   res.status(201).json({
     success: true,
     message: `delete category ${req.params.categoryId} successfully`,
@@ -60,43 +72,10 @@ exports.postUpdateCategory = AsyncHandler(async (req, res, next) => {
     );
   }
   category.name = req.body.name;
-  category.updateAt = Date.now();
   await category.save();
   res.status(201).json({
     success: true,
     data: category,
     message: `update category ${req.params.categoryId} successfully`,
   });
-});
-
-exports.posAddManyCategory = AsyncHandler(async (req, res, next) => {
-  const jsonArray = await csv().fromFile(req.file.path);
-  console.log(jsonArray);
-  count = 0;
-  Promise.all(
-    jsonArray.map(async (item, id) => {
-      console.log(item);
-      if (item.title === '') {
-        count = id + 1;
-        return next(
-          new ErrorResponse(
-            `Detect errors in excel data in line numbers ${count}!!`,
-            401,
-          ),
-        );
-      }
-    }),
-  );
-
-  Promise.all(
-    jsonArray.map(async (item, id) => {
-      await Category.create({
-        title: item.title,
-        createAt: Date.now(),
-        createBy: '6543c28ae4b2dbdf546106c3',
-      });
-    }),
-  );
-
-  await DeleteFile(req.file.path);
 });

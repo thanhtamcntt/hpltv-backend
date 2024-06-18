@@ -22,27 +22,8 @@ exports.getAllSubscriber = AsyncHandler(async (req, res, next) => {
   });
 });
 
-exports.getSubscriberToday = AsyncHandler(async (req, res, next) => {
-  const currentDate = new Date();
-  const startOfDay = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    currentDate.getDate(),
-  );
-  const endOfDay = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    currentDate.getDate() + 1,
-  );
-
-  const subscriber = await Subscriber.find({
-    createAt: {
-      $gte: startOfDay,
-      $lt: endOfDay,
-    },
-  })
-    .sort({ createAt: -1 })
-    .limit(10);
+exports.getSubscriberTop5 = AsyncHandler(async (req, res, next) => {
+  const subscriber = await Subscriber.find({}).sort({ createAt: -1 }).limit(5);
 
   res.status(200).json({
     success: true,
@@ -51,36 +32,20 @@ exports.getSubscriberToday = AsyncHandler(async (req, res, next) => {
   });
 });
 
-exports.getSubscriberOrderToday = AsyncHandler(async (req, res, next) => {
-  const currentDate = new Date();
-  const startOfDay = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    currentDate.getDate(),
-  );
-  const endOfDay = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    currentDate.getDate() + 1,
-  );
-
-  const order = await Order.find({
-    createAt: {
-      $gte: startOfDay,
-      $lt: endOfDay,
-    },
-  })
+exports.getSubscriberOrderTop5 = AsyncHandler(async (req, res, next) => {
+  const order = await Order.find({})
     .populate('userId')
+    .populate('packageId')
     .sort({ createAt: -1 })
-    .limit(10);
+    .limit(5);
 
   let data = [];
   for (let i = 0; i < order.length; i++) {
     const obj = {
       firstName: order[i].userId.firstName,
       lastName: order[i].userId.lastName,
-      typePack: order[i].information.typePack,
-      monthlyPrice: order[i].information.monthlyPrice,
+      typePack: order[i].packageId.typePack,
+      monthlyPrice: order[i].packageId.monthlyPrice,
     };
     data.push(obj);
   }

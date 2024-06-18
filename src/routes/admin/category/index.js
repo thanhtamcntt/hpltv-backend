@@ -10,8 +10,4 @@ router
   .route('/delete-category/:categoryId')
   .post(CategoryController.postDeleteCategory);
 
-router
-  .route('/add-many-category')
-  .post(uploadCsv, CategoryController.posAddManyCategory);
-
 module.exports = router;

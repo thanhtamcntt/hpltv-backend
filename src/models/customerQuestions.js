@@ -1,18 +1,25 @@
 const mongoose = require('mongoose');
 const Schema = require('mongoose').Schema;
 
-const Order = new Schema({
-  packageId: {
-    type: Schema.Types.ObjectId,
+const CustomerQuestions = new Schema({
+  title: {
+    type: String,
     required: true,
-    ref: 'Package',
+  },
+  description: {
+    type: String,
+    required: true,
   },
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
     ref: 'Subscriber',
   },
-  isDelete: {
+  explanation: {
+    type: String,
+    required: false,
+  },
+  isHandle: {
     type: Boolean,
     required: true,
     default: false,
@@ -20,9 +27,6 @@ const Order = new Schema({
   createAt: {
     type: Date,
   },
-  expirationDate: {
-    type: Date,
-  },
 });
 
-module.exports = mongoose.model('Order', Order);
+module.exports = mongoose.model('CustomerQuestions', CustomerQuestions);

@@ -8,4 +8,7 @@ router
   .route('/register-purchases-current-year')
   .get(SummaryController.getCountRegisterAndPurchasesCurrentYearAndMonth);
 
+router
+  .route('/summary-total-each-package')
+  .get(SummaryController.getSummaryTotalAmountEachPackage);
 module.exports = router;

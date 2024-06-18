@@ -96,29 +96,30 @@ exports.postUpdateFilmForSeries = AsyncHandler(async (req, res, next) => {
       new ErrorResponse(`Cannot find film id ${req.params.filmId}!!`, 401),
     );
   }
-  await deleteVideoCloud(film.videoUrl.videoId);
+  let infoVideo, duration, resultDuration;
+  if (req.files['videoUrl']) {
+    await deleteVideoCloud(film.videoUrl.videoId);
 
-  const infoVideo = {
-    videoId: req.files['videoUrl'][0].filename,
-    url: req.files['videoUrl'][0].path,
-  };
+    infoVideo = {
+      videoId: req.files['videoUrl'][0].filename,
+      url: req.files['videoUrl'][0].path,
+    };
 
-  const duration = await getVideoDurationInSeconds(
-    req.files['videoUrl'][0].path,
-  );
-  let resultDuration;
-  if (duration % 60 < 5) {
-    resultDuration = Math.floor(duration / 60);
-  } else {
-    resultDuration = Math.ceil(duration / 60);
+    duration = await getVideoDurationInSeconds(req.files['videoUrl'][0].path);
+    if (duration % 60 < 5) {
+      resultDuration = Math.floor(duration / 60);
+    } else {
+      resultDuration = Math.ceil(duration / 60);
+    }
   }
 
   film.releaseDate = req.body.releaseDate;
   film.filmSerialNumber = req.body.filmSerialNumber;
-  film.duration = resultDuration;
-  film.videoUrl = infoVideo;
+  if (req.files['videoUrl']) {
+    film.duration = resultDuration;
+    film.videoUrl = infoVideo;
+  }
   film.seriesId = req.params.seriesId;
-  film.updateAt = Date.now();
   await film.save();
 
   res.status(201).json({

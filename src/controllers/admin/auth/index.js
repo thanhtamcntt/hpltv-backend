@@ -38,6 +38,7 @@ exports.postLogin = AsyncHandler(async (req, res, next) => {
     avatarUser: user.avatarUser,
     phoneNumber: user.phoneNumber,
     role: user.role,
+    sex: user.sex,
   };
   const token = await hashToken(userInfo);
   res.status(200).json({

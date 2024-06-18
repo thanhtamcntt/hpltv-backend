@@ -2,18 +2,10 @@ const router = require('express').Router();
 const {
   postSignup,
   postLogin,
-  postUpdateProfile,
-  postChangePassword,
-  postChangeAvatarProfile,
-  postDeleteAvatarProfile,
-  postAddPaymentUser,
 } = require('../../../controllers/user/auth/index');
 const { body } = require('express-validator');
 const User = require('../../../models/user');
 const Subscriber = require('../../../models/subscriber');
-const CheckToken = require('../../../middlewares/checkToken');
-// const { upload } = require('../../../middlewares/multer');
-const { upload } = require('../../../helpers/multer');
 
 router.route('/signup').post(
   [
@@ -63,11 +55,4 @@ router
     postLogin,
   );
 
-router.route('/profile').patch(CheckToken, postUpdateProfile);
-router.route('/change-password').patch(CheckToken, postChangePassword);
-router
-  .route('/change-avatar')
-  .patch(CheckToken, upload, postChangeAvatarProfile);
-
-router.route('/delete-avatar').patch(CheckToken, postDeleteAvatarProfile);
 module.exports = router;

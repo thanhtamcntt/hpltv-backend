@@ -10,6 +10,16 @@ const Movies = new Schema({
     type: String,
     required: true,
   },
+  imageUrlBanner: {
+    imageId: {
+      type: String,
+      required: true,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+  },
   imageUrl: {
     imageId: {
       type: String,
@@ -42,19 +52,13 @@ const Movies = new Schema({
     type: String,
     required: true,
   },
-  country: {
-    type: String,
-    required: true,
-  },
+  country: [{ type: String, required: true }],
   duration: { type: Number, required: true },
   rating: { type: Number, required: true, default: 5 },
-  view: { type: Number, required: true, default: 5000 },
   createAt: {
     type: Date,
   },
-  updateAt: {
-    type: Date,
-  },
+
   listCategoryId: [
     { type: mongoose.Types.ObjectId, required: true, ref: 'Category' },
   ],
@@ -73,11 +77,6 @@ const Movies = new Schema({
     type: Boolean,
     required: true,
     default: false,
-  },
-  createBy: {
-    type: mongoose.Types.ObjectId,
-    required: true,
-    ref: 'User',
   },
 });
 

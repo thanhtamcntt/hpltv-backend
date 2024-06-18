@@ -18,15 +18,17 @@ exports.getAllMoviesFromPage = async (req, res, next) => {
   if (trash === 'false') {
     count = await Movies.find({ isDelete: false }).sort({ createAt: -1 });
     movies = await Movies.find({ isDelete: false })
-      .sort({ createAt: -1 })
+      .sort({ title: -1 })
       .skip((page - 1) * limit)
-      .limit(limit);
+      .limit(limit)
+      .collation({ locale: 'en', strength: 2 });
   } else {
     count = await Movies.find({ isDelete: true }).sort({ createAt: -1 });
     movies = await Movies.find({ isDelete: true })
-      .sort({ createAt: -1 })
+      .sort({ title: -1 })
       .skip((page - 1) * limit)
-      .limit(limit);
+      .limit(limit)
+      .collation({ locale: 'en', strength: 2 });
   }
 
   res.status(200).json({

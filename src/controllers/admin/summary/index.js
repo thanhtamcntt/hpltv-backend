@@ -1,6 +1,7 @@
 const AsyncHandler = require('express-async-handler');
 const ErrorResponse = require('../../../utils/errorResponse.js');
 const Subscriber = require('../../../models/subscriber.js');
+const Package = require('../../../models/package.js');
 const Order = require('../../../models/order.js');
 
 exports.getSummaryRegister = AsyncHandler(async (req, res, next) => {
@@ -92,7 +93,7 @@ exports.getSummaryRegister = AsyncHandler(async (req, res, next) => {
 exports.getCountRegisterAndPurchasesCurrentYearAndMonth = AsyncHandler(
   async (req, res, next) => {
     const subscriber = await Subscriber.find();
-    const order = await Order.find();
+    const order = await Order.find().populate('packageId');
     let data = [];
     const currentDate = new Date();
     let count = 0,
@@ -111,9 +112,9 @@ exports.getCountRegisterAndPurchasesCurrentYearAndMonth = AsyncHandler(
     order.map((item, id) => {
       const time = new Date(item.createAt);
       if (currentDate.getFullYear() === time.getFullYear()) {
-        total += parseInt(item.information.monthlyPrice);
+        total += parseInt(item.packageId.monthlyPrice);
         if (currentDate.getMonth() === time.getMonth()) {
-          totalMonth += parseInt(item.information.monthlyPrice);
+          totalMonth += parseInt(item.packageId.monthlyPrice);
         }
       }
     });
@@ -132,7 +133,7 @@ exports.getCountRegisterAndPurchasesCurrentYearAndMonth = AsyncHandler(
 );
 
 exports.getSummaryPurchases = AsyncHandler(async (req, res, next) => {
-  const order = await Order.find();
+  const order = await Order.find().populate('packageId');
   let data = [];
   const currentDate = new Date();
   if (req.query.type === 'month') {
@@ -150,7 +151,7 @@ exports.getSummaryPurchases = AsyncHandler(async (req, res, next) => {
           monthDate.getFullYear() === time.getFullYear() &&
           monthDate.getMonth() === time.getMonth()
         ) {
-          total += parseInt(item.information.monthlyPrice);
+          total += parseInt(item.packageId.monthlyPrice);
         }
       });
       formattedMonth = monthDate.toLocaleDateString('en-US', {
@@ -170,7 +171,7 @@ exports.getSummaryPurchases = AsyncHandler(async (req, res, next) => {
       order.map((item, id) => {
         time = new Date(item.createAt);
         if (monthDate.getFullYear() === time.getFullYear()) {
-          total += parseInt(item.information.monthlyPrice);
+          total += parseInt(item.packageId.monthlyPrice);
         }
       });
       formattedYear = monthDate.toLocaleDateString('en-US', {
@@ -197,7 +198,7 @@ exports.getSummaryPurchases = AsyncHandler(async (req, res, next) => {
           monthDate.getMonth() === time.getMonth() &&
           monthDate.getDate() === time.getDate()
         ) {
-          total += parseInt(item.information.monthlyPrice);
+          total += parseInt(item.packageId.monthlyPrice);
         }
       });
       formattedDay = monthDate.toLocaleDateString('en-US', {
@@ -216,3 +217,38 @@ exports.getSummaryPurchases = AsyncHandler(async (req, res, next) => {
     version: 1.0,
   });
 });
+
+exports.getSummaryTotalAmountEachPackage = AsyncHandler(
+  async (req, res, next) => {
+    const currentDate = new Date();
+    const order = await Order.find();
+    const package = await Package.find();
+    let packageData = [];
+    for (let i = 0; i < package.length; i++) {
+      packageData.push({
+        packageId: package[i]._id,
+        namePackage: package[i].typePack,
+        amountPack: package[i].monthlyPrice,
+        total: 0,
+      });
+    }
+    for (let j = 0; j < order.length; j++) {
+      let item = order[j];
+      let time = new Date(item.createAt);
+      if (currentDate.getFullYear() === time.getFullYear()) {
+        for (let i = 0; i < packageData.length; i++) {
+          if (
+            packageData[i].packageId.toString() === item.packageId.toString()
+          ) {
+            packageData[i].total += packageData[i].amountPack;
+          }
+        }
+      }
+    }
+    res.status(200).json({
+      data: packageData,
+      success: true,
+      version: 1.0,
+    });
+  },
+);
