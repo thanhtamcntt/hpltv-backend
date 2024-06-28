@@ -110,3 +110,15 @@ exports.getAllMoviesFetchLook = async (req, res, next) => {
     message: `Get all series successfully.`,
   });
 };
+
+exports.getNewMovies = async (req, res, next) => {
+  const movies = await Movies.find({ isDelete: false })
+    .sort({ createAt: -1 })
+    .limit(5);
+
+  res.status(200).json({
+    data: movies,
+    success: true,
+    message: `Get five new movies successfully.`,
+  });
+};

@@ -11,7 +11,11 @@ const { upload } = require('../../../helpers/multer');
 
 router.route('/verify-token').get(CheckToken, getVerifyUserToken);
 router.route('/profile').patch(CheckToken, postUpdateProfile);
-router.route('/change-password').patch(CheckToken, postChangePassword);
+router.route('/change-password').patch(
+  CheckToken,
+
+  postChangePassword,
+);
 router
   .route('/change-avatar')
   .patch(CheckToken, upload, postChangeAvatarProfile);

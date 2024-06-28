@@ -35,9 +35,6 @@ const Comment = new Schema({
   createAt: {
     type: Date,
   },
-  updateAt: {
-    type: Date,
-  },
 });
 
 module.exports = mongoose.model('Comment', Comment);

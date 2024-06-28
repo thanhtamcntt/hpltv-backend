@@ -15,7 +15,13 @@ exports.getAllOrder = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postPackageOrder = AsyncHandler(async (req, res, next) => {
-  const order = await Order.findOne({ userId: req.body.userId });
+  const order = await Order.findOne({
+    userId: req.body.userId,
+    expirationDate: { $gt: Date.now() },
+  })
+    .sort({ createAt: -1 })
+    .limit(1)
+    .populate('packageId');
 
   if (!order) {
     return res.status(200).json({
@@ -26,6 +32,7 @@ exports.postPackageOrder = AsyncHandler(async (req, res, next) => {
 
   return res.status(200).json({
     success: true,
+    data: order,
     message: `Find order payment id ${req.body.userId} successfully.`,
     version: 1.0,
   });
@@ -39,7 +46,7 @@ exports.postAddPaymentUser = AsyncHandler(async (req, res, next) => {
 
   let order;
   if (req.query.login) {
-    await Order.deleteOne({ userId: req.body.userId });
+    await Order.updateMany({ userId: req.body.userId }, { isDelete: true });
     order = await Order.create({
       userId: req.body.userId,
       packageId: req.body.packageId,
@@ -54,10 +61,8 @@ exports.postAddPaymentUser = AsyncHandler(async (req, res, next) => {
       expirationDate: Date.now() + 60 * 60 * 24 * 30 * 1000,
     });
   }
-  console.log('data đâu', order);
-  let dataOrder = await Order.findById(order._id).populate('packageId');
+
   return res.status(201).json({
-    order: dataOrder,
     success: true,
     message: `Create order payment id ${req.user._id} successfully.`,
     version: 1.0,
