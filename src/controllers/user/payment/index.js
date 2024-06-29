@@ -23,6 +23,7 @@ exports.postPayment = AsyncHandler(async (req, res, next) => {
     automatic_payment_methods: {
       enabled: true,
     },
+    // locale: 'en',
   });
 
   res.status(200).json({

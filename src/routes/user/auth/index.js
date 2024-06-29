@@ -2,6 +2,9 @@ const router = require('express').Router();
 const {
   postSignup,
   postLogin,
+  postForgotPassword,
+  postNewPassword,
+  postVerifyToken,
 } = require('../../../controllers/user/auth/index');
 const { body } = require('express-validator');
 const User = require('../../../models/user');
@@ -26,16 +29,16 @@ router.route('/signup').post(
         }
       }),
     body('phoneNumber', 'Please enter your phone number!!').isMobilePhone(),
-    body('password', 'Please enter your password at least 6 characters!!')
-      .trim()
-      .isAlphanumeric()
-      .isLength({ min: 6 }),
-    body('confirmPassword').custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error('Confirm password has to match with you password!!');
-      }
-      return true;
-    }),
+    // body('password', 'Please enter your password at least 6 characters!!')
+    //   .trim()
+    //   .isAlphanumeric()
+    //   .isLength({ min: 6 }),
+    // body('confirmPassword').custom((value, { req }) => {
+    //   if (value !== req.body.password) {
+    //     throw new Error('Confirm password has to match with you password!!');
+    //   }
+    //   return true;
+    // }),
   ],
   postSignup,
 );
@@ -47,12 +50,35 @@ router
       body('email', 'Please enter email in correct format!!')
         .isEmail()
         .normalizeEmail(),
-      body('password', 'Please enter your password at least 6 characters!!')
-        .trim()
-        .isAlphanumeric()
-        .isLength({ min: 6 }),
     ],
     postLogin,
   );
+
+router
+  .route('/forgot-password')
+  .post(
+    [
+      body('email', 'Please enter email in correct format!!')
+        .isEmail()
+        .normalizeEmail(),
+    ],
+    postForgotPassword,
+  );
+
+router.route('/verify-token-reset-password').post(postVerifyToken);
+
+router.route('/reset-password').post(
+  [
+    body('confirmNewPassword').custom((value, { req }) => {
+      if (value !== req.body.newPassword) {
+        throw new Error(
+          'Confirm new password has to match with you new password!!',
+        );
+      }
+      return true;
+    }),
+  ],
+  postNewPassword,
+);
 
 module.exports = router;

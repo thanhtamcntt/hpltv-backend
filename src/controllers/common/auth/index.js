@@ -5,6 +5,7 @@ const ErrorResponse = require('../../../utils/errorResponse.js');
 const bcrypt = require('bcryptjs');
 const hashToken = require('../../../helpers/signJwtTokenUser.js');
 const { deleteImageCloud } = require('../../../helpers/uploadImage.js');
+const passwordValidator = require('password-validator');
 require('dotenv').config();
 
 exports.getVerifyUserToken = AsyncHandler(async (req, res, next) => {
@@ -67,7 +68,32 @@ exports.postUpdateProfile = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postChangePassword = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
+  const schema = new passwordValidator();
+  schema
+    .is()
+    .min(8)
+    .is()
+    .max(100)
+    .has()
+    .uppercase()
+    .has()
+    .lowercase()
+    .has()
+    .digits(1)
+    .has()
+    .symbols(1)
+    .has()
+    .not()
+    .spaces();
+
+  if (!schema.validate(req.body.newPassword)) {
+    return next(
+      new ErrorResponse(
+        'Password must have at least 8 characters, including uppercase letters, lowercase letters, numbers and special characters.',
+        401,
+      ),
+    );
+  }
 
   if (req.body.confirmNewPassword !== req.body.newPassword) {
     return next(

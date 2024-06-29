@@ -38,7 +38,6 @@ exports.getSubscriberOrderTop5 = AsyncHandler(async (req, res, next) => {
     .populate('packageId')
     .sort({ createAt: -1 })
     .limit(5);
-
   let data = [];
   for (let i = 0; i < order.length; i++) {
     const obj = {

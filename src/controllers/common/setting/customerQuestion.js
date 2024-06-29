@@ -11,7 +11,6 @@ exports.getAllCustomerQuestionsFromPage = async (req, res, next) => {
     .sort({ createAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit);
-
   let data = [];
   for (let i = 0; i < customer.length; i++) {
     data.push({

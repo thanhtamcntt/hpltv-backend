@@ -8,6 +8,7 @@ const packageRouter = require('./package/index');
 const paymentRouter = require('./payment/index');
 const commonQuestionRouter = require('./setting/commonQuestion');
 const customerQuestionRouter = require('./setting/customerQuestion');
+const messageQuestionRouter = require('./message');
 
 router.use('/auth', authRouter);
 router.use('/film', filmRouter);
@@ -18,5 +19,6 @@ router.use('/package', packageRouter);
 router.use('/payment', paymentRouter);
 router.use('/common-questions', commonQuestionRouter);
 router.use('/customer-questions', customerQuestionRouter);
+router.use('/message', messageQuestionRouter);
 
 module.exports = router;

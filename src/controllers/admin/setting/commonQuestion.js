@@ -45,7 +45,6 @@ exports.postUpdateCommonQuestions = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postDeleteCommonQuestions = AsyncHandler(async (req, res, next) => {
-  console.log(req.params);
   if (!req.params.questionId) {
     return next(
       new ErrorResponse(`Please enter a valid id question delete`, 404),

@@ -55,15 +55,8 @@ const Subscriber = new Schema({
   createAt: {
     type: Date,
   },
-  updateAt: {
-    type: Date,
-  },
-  createAtBanned: {
-    type: Date,
-  },
-  createAtDelete: {
-    type: Date,
-  },
+  resetToken: String,
+  tokenExpiration: Date,
 });
 
 module.exports = mongoose.model('Subscriber', Subscriber);

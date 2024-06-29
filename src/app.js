@@ -32,11 +32,16 @@ const userNamespace = io.of('/user');
 const adminNamespace = io.of('/admin');
 
 userNamespace.on('connection', (socket) => {
-  console.log('connection user');
-
   socket.on('joinRoom', (data) => {
-    console.log('roomId: ', data);
     socket.join(data.roomId);
+  });
+
+  socket.on('leaveRoom', (roomId) => {
+    console.log(`user leave room ${roomId}`);
+
+    socket.leave(roomId);
+    adminNamespace.emit('forceLeave', roomId);
+    userNamespace.to(roomId).emit('forceLeave', roomId);
   });
 
   socket.on('receiveRoom', (data) => {
@@ -52,16 +57,17 @@ userNamespace.on('connection', (socket) => {
 });
 
 adminNamespace.on('connection', (socket) => {
-  console.log('connection admin');
-
   socket.on('joinRoom', (roomId) => {
     socket.join(roomId);
   });
 
-  // socket.on('receiveRoom', (data) => {
-  //   console.log('receive data: ', data);
-  //   return data;
-  // });
+  socket.on('leaveRoom', (roomId) => {
+    socket.leave(roomId);
+    console.log(`admin leave room ${roomId}`);
+
+    adminNamespace.in(roomId).emit('forceLeave', roomId);
+    userNamespace.in(roomId).emit('forceLeave', roomId);
+  });
 
   socket.on('chatCustomer', (data) => {
     console.log('Message received admin: ', data);
