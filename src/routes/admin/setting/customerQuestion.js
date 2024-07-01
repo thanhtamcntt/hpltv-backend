@@ -5,4 +5,8 @@ router
   .route('/create')
   .post(CustomerQuestionController.postCreateCustomerQuestions);
 
+router
+  .route('/resolve-question/:explainId')
+  .post(CustomerQuestionController.postResolveCustomerQuestions);
+
 module.exports = router;

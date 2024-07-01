@@ -24,7 +24,6 @@ exports.postLogin = AsyncHandler(async (req, res, next) => {
 
   const hashPassword = await bcrypt.compare(req.body.password, user.password);
 
-  console.log(hashPassword);
   if (!hashPassword) {
     return next(
       new ErrorResponse('Account information or password is incorrect', 401),

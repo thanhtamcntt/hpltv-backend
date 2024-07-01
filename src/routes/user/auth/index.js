@@ -5,10 +5,13 @@ const {
   postForgotPassword,
   postNewPassword,
   postVerifyToken,
+  postLogout,
+  postVerifyLogin,
 } = require('../../../controllers/user/auth/index');
 const { body } = require('express-validator');
 const User = require('../../../models/user');
 const Subscriber = require('../../../models/subscriber');
+const CheckToken = require('../../../middlewares/checkToken');
 
 router.route('/signup').post(
   [
@@ -80,5 +83,8 @@ router.route('/reset-password').post(
   ],
   postNewPassword,
 );
+
+router.route('/logout').post(CheckToken, postLogout);
+router.route('/verify-login').post(CheckToken, postVerifyLogin);
 
 module.exports = router;
