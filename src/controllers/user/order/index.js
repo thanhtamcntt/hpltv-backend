@@ -2,6 +2,9 @@ const AsyncHandler = require('express-async-handler');
 const Order = require('../../../models/order');
 const Subscriber = require('../../../models/subscriber');
 const ErrorResponse = require('../../../utils/errorResponse');
+const createOrderPdf = require('../../../utils/orderPdf');
+const transporter = require('../../../configs/sengrid.js');
+require('dotenv').config();
 
 exports.getAllOrder = AsyncHandler(async (req, res, next) => {
   const order = await Order.find().populate('packageId');
@@ -43,7 +46,6 @@ exports.postAddPaymentUser = AsyncHandler(async (req, res, next) => {
   if (!user) {
     return next(new ErrorResponse('User not found!!', 401));
   }
-
   let order;
   if (req.query.login) {
     await Order.updateMany({ userId: req.body.userId }, { isDelete: true });
@@ -62,9 +64,31 @@ exports.postAddPaymentUser = AsyncHandler(async (req, res, next) => {
     });
   }
 
-  return res.status(201).json({
-    success: true,
-    message: `Create order payment id ${req.user._id} successfully.`,
-    version: 1.0,
-  });
+  const orderPdf = await Order.findById(order._id)
+    .populate('userId')
+    .populate('packageId');
+
+  if (orderPdf) {
+    const pdfPath = await createOrderPdf(orderPdf);
+    console.log('PDF created successfully:', pdfPath);
+
+    res.status(201).json({
+      success: true,
+      message: `Create order payment id ${req.user._id} successfully.`,
+      version: 1.0,
+    });
+    // Gửi email với tệp PDF đính kèm
+    return transporter.sendMail({
+      from: `Showhub ${process.env.EMAIL_USERNAME}`,
+      to: orderPdf.userId.email,
+      subject: 'Invoice purchase',
+      attachments: [
+        {
+          filename: 'invoice.pdf',
+          path: pdfPath,
+          contentType: 'application/pdf',
+        },
+      ],
+    });
+  }
 });

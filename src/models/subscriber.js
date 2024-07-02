@@ -38,6 +38,20 @@ const Subscriber = new Schema({
       default: process.env.IMAGE_URL_DEFAULT,
     },
   },
+  twoFactor: {
+    auth: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    code: {
+      type: String,
+      required: false,
+    },
+    time: {
+      type: Date,
+    },
+  },
   password: {
     type: String,
     required: true,

@@ -5,8 +5,10 @@ const AsyncHandler = require('express-async-handler');
 exports.getAllCustomerQuestionsFromPage = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
-  const count = await CustomerQuestions.find().sort({ createAt: -1 });
-  const customer = await CustomerQuestions.find()
+  const count = await CustomerQuestions.find({ isHandle: false }).sort({
+    createAt: -1,
+  });
+  const customer = await CustomerQuestions.find({ isHandle: false })
     .populate('userId')
     .sort({ createAt: -1 })
     .skip((page - 1) * limit)

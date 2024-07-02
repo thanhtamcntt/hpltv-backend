@@ -10,6 +10,10 @@ const CustomerQuestions = new Schema({
     type: String,
     required: true,
   },
+  answer: {
+    type: String,
+    required: false,
+  },
   userId: {
     type: Schema.Types.ObjectId,
     required: true,

@@ -9,8 +9,17 @@ const passwordValidator = require('password-validator');
 require('dotenv').config();
 
 exports.getVerifyUserToken = AsyncHandler(async (req, res, next) => {
+  const user = await Subscriber.findOne({
+    _id: req.user.userId,
+    'twoFactor.auth': true,
+  });
+  let auth = false;
+  if (user) {
+    auth = true;
+  }
   res.status(200).json({
     success: true,
+    isAuth: auth,
     userInfo: req.user,
     version: 1.0,
   });
@@ -68,6 +77,24 @@ exports.postUpdateProfile = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postChangePassword = AsyncHandler(async (req, res, next) => {
+  let user;
+  if (req.query.user === 'user') {
+    user = await User.findById(req.user.userId);
+  } else {
+    user = await Subscriber.findById(req.user.userId);
+  }
+  if (!user) {
+    return next(new ErrorResponse('User not found!!', 401));
+  }
+
+  const hashPasswordCheck = await bcrypt.compare(
+    req.body.currentPassword,
+    user.password,
+  );
+
+  if (!hashPasswordCheck) {
+    return next(new ErrorResponse('Current password is incorrect!!', 401));
+  }
   const schema = new passwordValidator();
   schema
     .is()
@@ -99,16 +126,6 @@ exports.postChangePassword = AsyncHandler(async (req, res, next) => {
     return next(
       new ErrorResponse('Confirmation password does not match!!', 401),
     );
-  }
-
-  let user;
-  if (req.query.user === 'user') {
-    user = await User.findById(req.user.userId);
-  } else {
-    user = await Subscriber.findById(req.user.userId);
-  }
-  if (!user) {
-    return next(new ErrorResponse('User not found!!', 401));
   }
 
   const checkPassword = bcrypt.compare(user.password, req.body.currentPassword);

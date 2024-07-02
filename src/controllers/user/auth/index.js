@@ -7,6 +7,7 @@ const { validationResult } = require('express-validator');
 const hashToken = require('../../../helpers/signJwtTokenUser.js');
 const emailTemplate = require('../../../configs/mailText.js');
 const emailSignupTemplate = require('../../../configs/mailSignupText.js');
+const emailLogin = require('../../../configs/mailLogin.js');
 const transporter = require('../../../configs/sengrid.js');
 const crypto = require('crypto');
 const util = require('util');
@@ -53,6 +54,17 @@ exports.postLogin = AsyncHandler(async (req, res, next) => {
       version: 1.0,
     });
   } else {
+    const code = Math.floor(100000 + Math.random() * 900000);
+    user.twoFactor.auth = false;
+    user.twoFactor.code = code;
+    user.twoFactor.time = Date.now() + 1800000;
+    await user.save();
+    transporter.sendMail({
+      from: `Showhub ${process.env.EMAIL_USERNAME}`,
+      to: req.body.email,
+      subject: 'Requires login authentication for your Showhub account.',
+      html: emailLogin(`${user.firstName} ${user.lastName}`, code),
+    });
     res.status(200).json({
       success: true,
       isBanned: false,
@@ -232,13 +244,48 @@ exports.postVerifyToken = AsyncHandler(async (req, res, next) => {
     token: req.body.resetToken,
     tokenExpiration: { $gt: Date.now() },
   });
-  console.log(user);
   if (!user) {
     return next(new ErrorResponse('The token has expired!!', 401));
   } else {
     return res.status(200).json({
       success: true,
-      message: 'Valid tokens',
+      message: 'Verify successfully.',
+      isAuth: user.twoFactor.auth,
+      version: 1.0,
+    });
+  }
+});
+
+exports.postLogout = AsyncHandler(async (req, res, next) => {
+  const user = await Subscriber.findById(req.user.userId);
+  if (!user) {
+    return next(new ErrorResponse('User does not exist!!!!', 401));
+  } else {
+    user.twoFactor.auth = false;
+    await user.save();
+    return res.status(200).json({
+      success: true,
+      message: 'Logout successfully.',
+      version: 1.0,
+    });
+  }
+});
+
+exports.postVerifyLogin = AsyncHandler(async (req, res, next) => {
+  const user = await Subscriber.findOne({
+    _id: req.user.userId,
+    'twoFactor.code': req.body.code,
+    'twoFactor.time': { $gt: Date.now() },
+  });
+  if (!user) {
+    return next(new ErrorResponse('User does not exist!!!!', 401));
+  } else {
+    console.log(user);
+    user.twoFactor.auth = true;
+    await user.save();
+    return res.status(200).json({
+      success: true,
+      message: 'Verify login successfully.',
       version: 1.0,
     });
   }
