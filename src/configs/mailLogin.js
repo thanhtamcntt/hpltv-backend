@@ -13,7 +13,7 @@ const emailLogin = (name, text) => `
 
                 <p style="margin: 0; margin-bottom: 30px; color: #294661; font-size: 16px; font-weight: 300;">Your authentication request has been received.</p>
 
-                <p style="box-sizing: border-box;border-color: #348eda;width: 215px;text-align: center;font-weight: 400;text-decoration: none;display: inline-block;margin: 0;color: #ffffff;background-color: #00c9d3;border: solid 1px #348eda;border-radius: 2px;font-size: 16px;padding: 12px 10px;">Verification codes: ${text}</p>
+                <p style="box-sizing: border-box;border-color: #348eda;width: 215px;text-align: center;font-weight: 400;text-decoration: none;display: inline-block;margin: 0 auto 20px !important;color: #ffffff;background-color: #00c9d3;border: solid 1px #348eda;border-radius: 2px;font-size: 16px;padding: 12px 10px;">Verification codes: ${text}</p>
 
                 <p style="margin: 0;margin-bottom: 30px;color: #294661;font-size: 16px;font-weight: 300;">Thank you,<br>The ShowHub Team</p>
             </div>
