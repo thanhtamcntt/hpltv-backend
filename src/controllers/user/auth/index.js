@@ -8,7 +8,7 @@ const hashToken = require('../../../helpers/signJwtTokenUser.js');
 const emailTemplate = require('../../../configs/mailText.js');
 const emailSignupTemplate = require('../../../configs/mailSignupText.js');
 const emailLogin = require('../../../configs/mailLogin.js');
-const transporter = require('../../../configs/sengrid.js');
+const transporter = require('../../../configs/nodeMailer.js');
 const crypto = require('crypto');
 const util = require('util');
 const generator = require('generate-password');
@@ -58,6 +58,7 @@ exports.postLogin = AsyncHandler(async (req, res, next) => {
     user.twoFactor.auth = false;
     user.twoFactor.code = code;
     user.twoFactor.time = Date.now() + 1800000;
+    user.twoFactor.resend = Date.now();
     await user.save();
     transporter.sendMail({
       from: `Showhub ${process.env.EMAIL_USERNAME}`,
@@ -72,6 +73,37 @@ exports.postLogin = AsyncHandler(async (req, res, next) => {
       version: 1.0,
     });
   }
+});
+
+exports.postRequestCode = AsyncHandler(async (req, res, next) => {
+  const user = await Subscriber.findOne({
+    email: req.body.email,
+    isBanned: false,
+    'twoFactor.resend': { $lt: Date.now() },
+  });
+  console.log(user);
+  if (!user) {
+    return next(new ErrorResponse('Not enough time to request again!!', 401));
+  }
+
+  const code = Math.floor(100000 + Math.random() * 900000);
+  user.twoFactor.auth = false;
+  user.twoFactor.code = code;
+  user.twoFactor.time = Date.now() + 1800000;
+  user.twoFactor.resend = Date.now() + 60000;
+  await user.save();
+  transporter.sendMail({
+    from: `Showhub ${process.env.EMAIL_USERNAME}`,
+    to: req.body.email,
+    subject: 'Requires login authentication for your Showhub account.',
+    html: emailLogin(`${user.firstName} ${user.lastName}`, code),
+  });
+  console.log('vào đây');
+
+  res.status(200).json({
+    success: true,
+    version: 1.0,
+  });
 });
 
 exports.postSignup = AsyncHandler(async (req, res, next) => {
@@ -115,7 +147,10 @@ exports.postSignup = AsyncHandler(async (req, res, next) => {
           from: `Showhub ${process.env.EMAIL_USERNAME}`,
           to: req.body.email,
           subject: 'Requires registration of your Showhub account',
-          html: emailSignupTemplate(req.body.email, password),
+          html: emailSignupTemplate(
+            req.body.firstName + req.body.lastName,
+            password,
+          ),
         });
         return res.status(200).json({
           user: newUser,
@@ -161,7 +196,7 @@ exports.postForgotPassword = AsyncHandler(async (req, res, next) => {
       from: `Showhub ${process.env.EMAIL_USERNAME}`,
       to: req.body.email,
       subject: 'Your Showhub password reset request',
-      html: emailTemplate(req.body.email, token),
+      html: emailTemplate(user.firstName + user.lastName, token),
     });
     return res.status(200).json({
       success: true,

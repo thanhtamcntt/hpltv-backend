@@ -18,10 +18,6 @@ router
       body('email', 'Please enter the correct email format')
         .isEmail()
         .normalizeEmail(),
-      body('password', 'Please enter your password at least 6 characters!!')
-        .trim()
-        .isAlphanumeric()
-        .isLength({ min: 6 }),
     ],
     postLogin,
   );

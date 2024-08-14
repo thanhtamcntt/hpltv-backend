@@ -10,7 +10,8 @@ const Movies = new Schema({
     type: String,
     required: true,
   },
-  imageUrlBanner: {
+
+  imageUrl: {
     imageId: {
       type: String,
       required: true,
@@ -20,8 +21,8 @@ const Movies = new Schema({
       required: true,
     },
   },
-  imageUrl: {
-    imageId: {
+  videoTrailerUrl: {
+    videoId: {
       type: String,
       required: true,
     },
@@ -75,7 +76,9 @@ const Movies = new Schema({
       valueRating: { type: Number, required: true },
     },
   ],
-  listPackageIdBand: [{ type: mongoose.Types.ObjectId, required: false }],
+  listPackageIdBand: [
+    { type: mongoose.Types.ObjectId, required: false, ref: 'Package' },
+  ],
   totalRating: { type: Number, required: true, default: 100 },
   isDelete: {
     type: Boolean,

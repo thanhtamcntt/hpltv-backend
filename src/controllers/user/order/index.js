@@ -3,14 +3,30 @@ const Order = require('../../../models/order');
 const Subscriber = require('../../../models/subscriber');
 const ErrorResponse = require('../../../utils/errorResponse');
 const createOrderPdf = require('../../../utils/orderPdf');
-const transporter = require('../../../configs/sengrid.js');
+const transporter = require('../../../configs/nodeMailer.js');
 require('dotenv').config();
 
 exports.getAllOrder = AsyncHandler(async (req, res, next) => {
-  const order = await Order.find().populate('packageId');
-
+  const order = await Order.find({ isDelete: false })
+    .populate('packageId')
+    .sort({ createAt: -1 });
   return res.status(200).json({
     data: order,
+    success: true,
+    message: `Get all order successfully.`,
+    version: 1.0,
+  });
+});
+
+exports.getOrderFromUserId = AsyncHandler(async (req, res, next) => {
+  const order = await Order.find({ isDelete: false, userId: req.params.userId })
+    .populate('packageId')
+    .sort({ createAt: -1 })
+    .limit(1);
+  console.log('order' + order);
+
+  return res.status(200).json({
+    data: order[0],
     success: true,
     message: `Get all order successfully.`,
     version: 1.0,
@@ -70,7 +86,6 @@ exports.postAddPaymentUser = AsyncHandler(async (req, res, next) => {
 
   if (orderPdf) {
     const pdfPath = await createOrderPdf(orderPdf);
-    console.log('PDF created successfully:', pdfPath);
 
     res.status(201).json({
       success: true,

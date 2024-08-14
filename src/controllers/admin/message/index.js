@@ -1,6 +1,9 @@
+const { json } = require('express');
 const Message = require('../../../models/message');
 const ErrorResponse = require('../../../utils/errorResponse');
 const AsyncHandler = require('express-async-handler');
+const { deleteImageCloud } = require('../../../helpers/uploadImage');
+const { deleteVideoCloud } = require('../../../helpers/uploadVideo');
 
 exports.postCreateMessage = AsyncHandler(async (req, res, next) => {
   const message = await Message.create({
@@ -23,8 +26,37 @@ exports.postCreateMessage = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postUpdateMessage = AsyncHandler(async (req, res, next) => {
+  const dataAvatar = JSON.parse(req.body.avatar);
+  let currentTime = new Date();
+  currentTime.setSeconds(currentTime.getSeconds() + 1);
+  let formattedTime = `${currentTime.getHours()}:${
+    currentTime.getMinutes() > 9
+      ? currentTime.getMinutes()
+      : '0' + currentTime.getMinutes()
+  }`;
+  let data = {
+    ...req.body,
+    avatar: dataAvatar,
+    time: formattedTime,
+  };
+  if (req.files['file']) {
+    delete data['input'];
+    delete data['file'];
+
+    data = {
+      ...data,
+      time: formattedTime,
+      file: {
+        type: req.files['file'][0].mimetype.split('/')[0],
+        url: req.files['file'][0].path,
+        imageId: req.files['file'][0].filename.split('/')[1],
+      },
+    };
+  } else {
+    delete data['file'];
+  }
+
   const message = await Message.findOne({ roomId: req.params.roomId });
-  console.log(req.body);
   if (!message) {
     return next(
       new ErrorResponse(
@@ -36,12 +68,16 @@ exports.postUpdateMessage = AsyncHandler(async (req, res, next) => {
   const filter = { roomId: req.params.roomId };
   const update = {
     $push: {
-      messages: req.body,
+      messages: data,
     },
   };
+
   await Message.updateOne(filter, update);
 
+  const dataMessage = await Message.findOne({ roomId: req.params.roomId });
+
   res.status(201).json({
+    data: dataMessage,
     success: true,
     message: `update message with room Id ${req.params.roomId} successfully`,
   });
@@ -52,10 +88,33 @@ exports.postUpdateOff = AsyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(`Please enter a valid roomId!!`, 401));
   }
 
+  const message = await Message.findOne({ roomId: req.params.roomId });
+
+  if (!message) {
+    return next(
+      new ErrorResponse(
+        `Cannot find message with room Id ${req.params.roomId}!!`,
+        401,
+      ),
+    );
+  }
+
   await Message.updateOne(
     { roomId: req.params.roomId },
     { isChatStatus: false },
   );
+
+  for (const item of message.messages) {
+    if (!item.input) {
+      console.log(item);
+      console.log(item.file.type);
+      if (item.file.type === 'image') {
+        await deleteImageCloud('image-handle/' + item.file.imageId);
+      } else {
+        await deleteVideoCloud('video-handle/' + item.file.imageId);
+      }
+    }
+  }
 
   res.status(201).json({
     success: true,
@@ -63,48 +122,28 @@ exports.postUpdateOff = AsyncHandler(async (req, res, next) => {
   });
 });
 
-// exports.postChangeStatus = AsyncHandler(async (req, res, next) => {
-//   if (!req.body.roomId) {
-//     return next(new ErrorResponse(`Please enter a valid roomId!!`, 401));
-//   }
+exports.postUpdateJoinChat = AsyncHandler(async (req, res, next) => {
+  try {
+    const message = await Message.findOne({ roomId: req.body.roomId });
 
-//   await Message.updateOne({ roomId: req.body.roomId }, { isChatStatus: true });
+    if (!message) {
+      return next(
+        new ErrorResponse(
+          `Cannot find message with room Id ${req.body.roomId}`,
+          404,
+        ),
+      );
+    }
 
-//   res.status(201).json({
-//     success: true,
-//     message: `Update status live chat roomId ${req.body.roomId} successfully`,
-//   });
-// });
+    await Message.updateOne(
+      { roomId: req.body.roomId },
+      { 'participants.adminId': req.body.userId },
+    );
 
-// exports.postDeleteCategory = AsyncHandler(async (req, res, next) => {
-//   console.log(req.params);
-//   if (!req.params.categoryId) {
-//     return next(
-//       new ErrorResponse(`Please enter a valid id category delete`, 404),
-//     );
-//   }
-//   const category = await Category.findOne({ _id: req.params.categoryId });
-//   if (!category) {
-//     return next(
-//       new ErrorResponse(
-//         `Cannot find category id ${req.params.categoryId}!!`,
-//         401,
-//       ),
-//     );
-//   }
-
-//   await Movies.updateMany(
-//     { listCategoryId: req.params.categoryId },
-//     { $pull: { listCategoryId: req.params.categoryId } },
-//   );
-//   await Series.updateMany(
-//     { listCategoryId: req.params.categoryId },
-//     { $pull: { listCategoryId: req.params.categoryId } },
-//   );
-
-//   await Category.deleteOne({ _id: req.params.categoryId });
-//   res.status(201).json({
-//     success: true,
-//     message: `delete category ${req.params.categoryId} successfully`,
-//   });
-// });
+    res
+      .status(200)
+      .json({ success: true, message: 'Admin updated successfully' });
+  } catch (err) {
+    return next(new ErrorResponse('Error updating admin', 500));
+  }
+});

@@ -7,6 +7,7 @@ const {
   postVerifyToken,
   postLogout,
   postVerifyLogin,
+  postRequestCode,
 } = require('../../../controllers/user/auth/index');
 const { body } = require('express-validator');
 const User = require('../../../models/user');
@@ -72,5 +73,6 @@ router.route('/reset-password').post(
 
 router.route('/logout').post(CheckToken, postLogout);
 router.route('/verify-login').post(CheckToken, postVerifyLogin);
+router.route('/resend-code').post(CheckToken, postRequestCode);
 
 module.exports = router;

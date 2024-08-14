@@ -3,6 +3,8 @@ const {
   getAllUser,
   createUser,
   updateUser,
+  getAllUserFromPage,
+  getAllUserFetchLook,
 } = require('../../../../controllers/admin/manage/user');
 const CheckToken = require('../../../../middlewares/checkToken');
 const { body } = require('express-validator');
@@ -10,6 +12,8 @@ const User = require('../../../../models/user');
 const Subscriber = require('../../../../models/subscriber');
 
 router.route('/').get(CheckToken, getAllUser);
+router.route('/from-page').get(getAllUserFromPage);
+router.route('/fetch-look').get(getAllUserFetchLook);
 router.route('/create').post(
   CheckToken,
   [
@@ -52,8 +56,14 @@ router.route('/update/:userId').post(
       .isLength({ min: 3 }),
     body('email', 'Please enter email in correct format!!').custom(
       async (value, { req }) => {
-        const user = await User.findOne({ email: value });
-        const subscriber = await Subscriber.findOne({ email: value });
+        const user = await User.findOne({
+          email: value,
+          _id: { $ne: req.params.userId },
+        });
+        const subscriber = await Subscriber.findOne({
+          email: value,
+          _id: { $ne: req.params.userId },
+        });
         if (user || subscriber) {
           throw new Error('Email is registered in the system!!');
         }

@@ -1,7 +1,9 @@
 const Movies = require('../../../../models/movies');
 
 exports.getAllMovies = async (req, res, next) => {
-  const movies = await Movies.find().sort({ createAt: -1 });
+  const movies = await Movies.find()
+    .sort({ createAt: -1 })
+    .populate('listCategoryId');
 
   res.status(200).json({
     data: movies,
@@ -18,17 +20,15 @@ exports.getAllMoviesFromPage = async (req, res, next) => {
   if (trash === 'false') {
     count = await Movies.find({ isDelete: false }).sort({ createAt: -1 });
     movies = await Movies.find({ isDelete: false })
-      .sort({ title: -1 })
+      .sort({ createAt: -1 })
       .skip((page - 1) * limit)
-      .limit(limit)
-      .collation({ locale: 'en', strength: 2 });
+      .limit(limit);
   } else {
     count = await Movies.find({ isDelete: true }).sort({ createAt: -1 });
     movies = await Movies.find({ isDelete: true })
-      .sort({ title: -1 })
+      .sort({ createAt: -1 })
       .skip((page - 1) * limit)
-      .limit(limit)
-      .collation({ locale: 'en', strength: 2 });
+      .limit(limit);
   }
 
   res.status(200).json({

@@ -3,14 +3,12 @@ const ErrorResponse = require('../../../../utils/errorResponse');
 const AsyncHandler = require('express-async-handler');
 const { deleteVideoCloud } = require('../../../../helpers/uploadVideo');
 const { getVideoDurationInSeconds } = require('get-video-duration');
+const csv = require('csvtojson');
+const DeleteFile = require('../../../../utils/deleteFile');
 
-exports.getAllFilmForSeries = AsyncHandler(async (req, res, next) => {
-  console.log(req.params.seriesId);
-});
+exports.getAllFilmForSeries = AsyncHandler(async (req, res, next) => {});
 
 exports.postCreateFilmForSeries = AsyncHandler(async (req, res, next) => {
-  console.log('postCreate film', req.body);
-  console.log('param film', req.params);
   if (!req.files['videoUrl']) {
     return next(new ErrorResponse(`Please enter a valid file video`, 404));
   }
@@ -57,8 +55,6 @@ exports.postCreateFilmForSeries = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postDeleteFilmForSeries = AsyncHandler(async (req, res, next) => {
-  console.log(req.params);
-  console.log(req.body);
   if (!req.params.filmId) {
     return next(new ErrorResponse(`Please enter a valid id film delete`, 404));
   }
@@ -88,14 +84,13 @@ exports.postDeleteFilmForSeries = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postUpdateFilmForSeries = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
-  console.log(req.params);
   const film = await FilmForSeries.findById(req.params.filmId);
   if (!film) {
     return next(
       new ErrorResponse(`Cannot find film id ${req.params.filmId}!!`, 401),
     );
   }
+
   let infoVideo, duration, resultDuration;
   if (req.files['videoUrl']) {
     await deleteVideoCloud(film.videoUrl.videoId);
@@ -189,15 +184,12 @@ exports.postRecoverFilmForSeries = AsyncHandler(async (req, res, next) => {
 exports.postAddManyFilmForSeries = AsyncHandler(async (req, res, next) => {
   console.log(req.file.path);
   const jsonArray = await csv().fromFile(req.file.path);
-  console.log(jsonArray);
   count = 0;
   Promise.all(
     jsonArray.map(async (item, id) => {
       if (
         item.videoId === '' ||
         item.videoUrl === '' ||
-        item.releaseDate === '' ||
-        item.duration === '' ||
         item.filmSerialNumber === '' ||
         item.seriesId === ''
       ) {
@@ -215,19 +207,20 @@ exports.postAddManyFilmForSeries = AsyncHandler(async (req, res, next) => {
   Promise.all(
     jsonArray.map(async (item, id) => {
       await FilmForSeries.create({
-        releaseDate: +item.releaseDate,
-        duration: +item.duration,
         videoUrl: {
           videoId: item.videoId,
           url: item.videoUrl,
         },
-        filmSerialNumber: item.filmSerialNumber,
+        filmSerialNumber: +item.filmSerialNumber,
         createAt: Date.now(),
         seriesId: item.seriesId,
-        createBy: '6543c28ae4b2dbdf546106c3',
       });
     }),
   );
 
   await DeleteFile(req.file.path);
+  res.status(200).json({
+    success: true,
+    message: 'Add many film for series successfully',
+  });
 });

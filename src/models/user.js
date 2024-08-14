@@ -53,9 +53,6 @@ const User = new Schema({
   createAt: {
     type: Date,
   },
-  updateAt: {
-    type: Date,
-  },
 });
 
 module.exports = mongoose.model('User', User);

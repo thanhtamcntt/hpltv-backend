@@ -11,6 +11,15 @@ exports.getPackage = AsyncHandler(async (req, res, next) => {
   });
 });
 
+exports.getPackageMax = AsyncHandler(async (req, res, next) => {
+  const paymentData = await Package.find().sort({ monthlyPrice: -1 }).limit(1);
+  res.status(200).json({
+    packageId: paymentData[0]._id,
+    success: true,
+    message: `Get data package max successfully.`,
+  });
+});
+
 exports.getAllPackageFromPage = AsyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -36,7 +45,6 @@ exports.getAllPackageFromPage = AsyncHandler(async (req, res, next) => {
 });
 
 exports.getAllPackageFetchLook = async (req, res, next) => {
-  console.log(req.query);
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const name = req.query.name;
