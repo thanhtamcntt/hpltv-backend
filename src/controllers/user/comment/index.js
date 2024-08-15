@@ -16,8 +16,6 @@ exports.getAllComment = async (req, res, next) => {
 };
 
 exports.postAddComment = AsyncHandler(async (req, res, next) => {
-  console.log('req.body', req.body);
-  console.log('req.query', req.query);
   let newComment;
   if (req.query.reply === 'true') {
     newComment = await Comment.create({
@@ -30,8 +28,6 @@ exports.postAddComment = AsyncHandler(async (req, res, next) => {
       createAt: Date.now(),
     });
   } else {
-    console.log('???');
-
     newComment = await Comment.create({
       content: req.body.content,
       userId: req.body.userId,
@@ -39,7 +35,6 @@ exports.postAddComment = AsyncHandler(async (req, res, next) => {
       createAt: Date.now(),
     });
   }
-  console.log('newComment', newComment);
   if (newComment) {
     return res.status(200).json({
       data: newComment,
@@ -82,7 +77,6 @@ exports.postDeleteComment = async (req, res, next) => {
 };
 
 exports.postUpdateComment = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
   const comment = await Comment.findById(req.body.commentId);
   if (!comment) {
     return next(

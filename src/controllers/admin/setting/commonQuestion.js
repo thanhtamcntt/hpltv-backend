@@ -24,7 +24,6 @@ exports.postCreateCommonQuestions = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postUpdateCommonQuestions = AsyncHandler(async (req, res, next) => {
-  console.log(req.body.title, req.body.description, req.params.questionId);
   const question = await CommonQuestions.findById(req.params.questionId);
   if (!question) {
     return next(

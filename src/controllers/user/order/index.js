@@ -23,7 +23,6 @@ exports.getOrderFromUserId = AsyncHandler(async (req, res, next) => {
     .populate('packageId')
     .sort({ createAt: -1 })
     .limit(1);
-  console.log('order' + order);
 
   return res.status(200).json({
     data: order[0],

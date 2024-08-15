@@ -79,7 +79,6 @@ exports.getMoviesCanWantToMatch = async (req, res, next) => {
 };
 
 exports.postHandleLikeMovies = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
   const movies = await Movies.findById(req.body.filmId);
   if (!movies) {
     return next(
@@ -101,8 +100,6 @@ exports.postHandleLikeMovies = AsyncHandler(async (req, res, next) => {
         { new: true },
       );
     }
-
-    console.log(updatedDocument);
 
     res.status(201).json({
       success: true,
@@ -152,8 +149,6 @@ exports.postHandleRatingMovies = AsyncHandler(async (req, res, next) => {
         },
         { new: true },
       );
-
-      console.log('update document nè:', updatedDocument);
 
       res.status(201).json({
         success: true,

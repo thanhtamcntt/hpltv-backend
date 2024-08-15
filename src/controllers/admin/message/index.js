@@ -106,8 +106,6 @@ exports.postUpdateOff = AsyncHandler(async (req, res, next) => {
 
   for (const item of message.messages) {
     if (!item.input) {
-      console.log(item);
-      console.log(item.file.type);
       if (item.file.type === 'image') {
         await deleteImageCloud('image-handle/' + item.file.imageId);
       } else {

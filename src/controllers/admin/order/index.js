@@ -4,7 +4,6 @@ const Subscriber = require('../../../models/subscriber');
 const ErrorResponse = require('../../../utils/errorResponse');
 
 exports.postAddPayment = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
   await Order.updateMany({ userId: req.body.userId }, { isDelete: true });
   const order = await Order.create({
     userId: req.body.userId,

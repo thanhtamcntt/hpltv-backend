@@ -7,7 +7,6 @@ const DeleteFile = require('../../../utils/deleteFile');
 const csv = require('csvtojson');
 
 exports.postCreateCategory = AsyncHandler(async (req, res, next) => {
-  console.log('body created', req.body);
   const category = await Category.create({
     name: req.body.name,
     createAt: Date.now(),
@@ -28,7 +27,6 @@ exports.postCreateCategory = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postDeleteCategory = AsyncHandler(async (req, res, next) => {
-  console.log(req.params);
   if (!req.params.categoryId) {
     return next(
       new ErrorResponse(`Please enter a valid id category delete`, 404),
@@ -60,9 +58,7 @@ exports.postDeleteCategory = AsyncHandler(async (req, res, next) => {
   });
 });
 exports.postUpdateCategory = AsyncHandler(async (req, res, next) => {
-  console.log(req.params);
   const category = await Category.findById(req.params.categoryId);
-  console.log(req.body);
   if (!category) {
     return next(
       new ErrorResponse(
