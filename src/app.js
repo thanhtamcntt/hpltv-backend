@@ -37,8 +37,6 @@ userNamespace.on('connection', (socket) => {
   });
 
   socket.on('leaveRoom', (roomId) => {
-    console.log(`user leave room ${roomId}`);
-
     socket.leave(roomId);
     adminNamespace.emit('forceLeave', roomId);
     userNamespace.to(roomId).emit('forceLeave', roomId);
@@ -49,7 +47,6 @@ userNamespace.on('connection', (socket) => {
   });
 
   socket.on('chatCustomer', (data) => {
-    console.log('Message received user: ', data);
     adminNamespace.emit('chatCustomer', data);
   });
 
@@ -61,16 +58,18 @@ adminNamespace.on('connection', (socket) => {
     socket.join(roomId);
   });
 
+  socket.on('deleteRoom', (data) => {
+    socket.broadcast.emit('delete-room', data);
+  });
+
   socket.on('leaveRoom', (roomId) => {
     socket.leave(roomId);
-    console.log(`admin leave room ${roomId}`);
 
-    adminNamespace.in(roomId).emit('forceLeave', roomId);
-    userNamespace.in(roomId).emit('forceLeave', roomId);
+    adminNamespace.to(roomId).emit('forceLeave', roomId);
+    userNamespace.to(roomId).emit('forceLeave', roomId);
   });
 
   socket.on('chatCustomer', (data) => {
-    console.log('Message received admin: ', data);
     userNamespace.emit('chatCustomer', data);
   });
 

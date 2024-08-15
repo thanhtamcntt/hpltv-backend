@@ -12,27 +12,20 @@ const storage = new CloudinaryStorage({
     } else {
       resourceType = 'image';
     }
-    if (file.fieldname === 'imageUrl' || file.fieldname === 'imageUrlBanner') {
-      folderName = 'image-webFilm';
-    } else {
-      folderName = 'image-avatar';
-    }
+
     return {
       resource_type: resourceType,
-      folder: resourceType === 'video' ? 'video-webFilm' : folderName,
+      folder: resourceType === 'video' ? 'video-handle' : 'image-handle',
       allowedFormats:
         resourceType === 'video' ? ['mp4'] : ['jpg', 'png', 'jpeg'],
     };
   },
 });
 
-const upload = multer({ storage: storage }).fields([
-  { name: 'videoTrailerUrl' },
-  { name: 'imageUrl' },
-  { name: 'videoUrl' },
-  { name: 'imageAvatar' },
+const uploadFileHandle = multer({ storage: storage }).fields([
+  { name: 'file' },
 ]);
 
 module.exports = {
-  upload,
+  uploadFileHandle,
 };

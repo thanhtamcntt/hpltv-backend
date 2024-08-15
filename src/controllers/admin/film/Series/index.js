@@ -1,22 +1,29 @@
 const Series = require('../../../../models/series');
+const FilmForSeries = require('../../../../models/filmForSeries');
 const ErrorResponse = require('../../../../utils/errorResponse');
 const AsyncHandler = require('express-async-handler');
 const { deleteImageCloud } = require('../../../../helpers/uploadImage');
+const { deleteVideoCloud } = require('../../../../helpers/uploadVideo');
 const csv = require('csvtojson');
 const DeleteFile = require('../../../../utils/deleteFile');
 
 exports.postCreateSeries = AsyncHandler(async (req, res, next) => {
-  if (!req.files['imageUrl'] || !req.files['imageUrlBanner']) {
-    return next(new ErrorResponse(`Please enter a valid file image`, 404));
+  if (!req.files['imageUrl'] || !req.files['videoTrailerUrl']) {
+    return next(
+      new ErrorResponse(
+        `Please enter a valid file image and video trailer!!`,
+        404,
+      ),
+    );
   }
 
   const infoImage = {
     imageId: req.files['imageUrl'][0].filename,
     url: req.files['imageUrl'][0].path,
   };
-  const infoImageBanner = {
-    imageId: req.files['imageUrlBanner'][0].filename,
-    url: req.files['imageUrlBanner'][0].path,
+  const infoVideoTrailer = {
+    videoId: req.files['videoTrailerUrl'][0].filename,
+    url: req.files['videoTrailerUrl'][0].path,
   };
 
   const series = await Series.create({
@@ -27,11 +34,11 @@ exports.postCreateSeries = AsyncHandler(async (req, res, next) => {
     cast: req.body.cast,
     country: req.body.country.split(','),
     imageUrl: infoImage,
-    imageUrlBanner: infoImageBanner,
+    videoUrl: infoVideoTrailer,
     listCategoryId: req.body.listCategoryId.split(','),
+    listPackageIdBand: req.body.listPackageIdBand.split(','),
     createAt: Date.now(),
   });
-  console.log('new serries', series);
 
   if (!series) {
     return next(
@@ -50,8 +57,8 @@ exports.postCreateSeries = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postDeleteSeries = AsyncHandler(async (req, res, next) => {
-  console.log(req.params);
   console.log(req.body);
+  console.log(req.params);
   if (!req.params.seriesId) {
     return next(
       new ErrorResponse(`Please enter a valid id series delete`, 404),
@@ -74,7 +81,17 @@ exports.postDeleteSeries = AsyncHandler(async (req, res, next) => {
     await series.save();
   } else {
     await deleteImageCloud(series.imageUrl.imageId);
-    await deleteImageCloud(series.imageUrlBanner.imageId);
+    await deleteVideoCloud(series.videoUrl.videoId);
+    const film = await FilmForSeries.find({ seriesId: req.params.seriesId });
+    console.log(film);
+    if (film.length > 0) {
+      await Promise.all(
+        film.map(async (item) => {
+          await deleteVideoCloud(item.videoUrl.videoId);
+        }),
+      );
+    }
+    await FilmForSeries.deleteMany({ seriesId: req.params.seriesId });
     await Series.deleteOne({ _id: req.params.seriesId });
   }
 
@@ -92,7 +109,7 @@ exports.postUpdateSeries = AsyncHandler(async (req, res, next) => {
       new ErrorResponse(`Cannot find series id ${req.params.seriesId}!!`, 401),
     );
   }
-  let infoImageBanner, infoImage;
+  let infoVideoTrailer, infoImage;
   if (req.files['imageUrl']) {
     await deleteImageCloud(series.imageUrl.imageId);
     infoImage = {
@@ -100,11 +117,12 @@ exports.postUpdateSeries = AsyncHandler(async (req, res, next) => {
       url: req.files['imageUrl'][0].path,
     };
   }
-  if (req.files['imageUrlBanner']) {
-    await deleteImageCloud(series.imageUrlBanner.imageId);
-    infoImageBanner = {
-      imageId: req.files['imageUrlBanner'][0].filename,
-      url: req.files['imageUrlBanner'][0].path,
+  if (req.files['videoTrailerUrl']) {
+    console.log(series.videoUrl.videoId);
+    await deleteVideoCloud(series.videoUrl.videoId);
+    infoVideoTrailer = {
+      videoId: req.files['videoTrailerUrl'][0].filename,
+      url: req.files['videoTrailerUrl'][0].path,
     };
   }
 
@@ -117,12 +135,18 @@ exports.postUpdateSeries = AsyncHandler(async (req, res, next) => {
   if (req.files['imageUrl']) {
     series.imageUrl = infoImage;
   }
-  if (req.files['imageUrlBanner']) {
-    series.imageUrlBanner = infoImageBanner;
+  if (req.files['videoTrailerUrl']) {
+    series.videoUrl = infoVideoTrailer;
   }
   series.listCategoryId = req.body.listCategoryId.split(',');
-  await series.save();
+  series.listPackageIdBand = req.body.listPackageIdBand.split(',');
 
+  try {
+    await series.save();
+  } catch (error) {
+    console.error('Error series:', error);
+  }
+  console.log(series);
   res.status(201).json({
     success: true,
     data: series,
@@ -143,5 +167,73 @@ exports.postRecoverSeries = AsyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: 'Changed the status series successfully',
+  });
+});
+
+exports.postAddManyMovies = AsyncHandler(async (req, res, next) => {
+  const jsonArray = await csv().fromFile(req.file.path);
+  let count = 0;
+  for (let i = 0; i < jsonArray.length; i++) {
+    if (
+      jsonArray[i].title === '' ||
+      jsonArray[i].description === '' ||
+      jsonArray[i].videoId === '' ||
+      jsonArray[i].videoUrl === '' ||
+      jsonArray[i].imageId === '' ||
+      jsonArray[i].imageUrl === '' ||
+      jsonArray[i].releaseDate === '' ||
+      jsonArray[i].director === '' ||
+      jsonArray[i].cast === '' ||
+      jsonArray[i].country === '' ||
+      jsonArray[i].duration === '' ||
+      jsonArray[i].listCategoryId === '' ||
+      jsonArray[i].listPackageIdBand === ''
+    ) {
+      count = i + 1;
+      return next(
+        new ErrorResponse(
+          `Detect errors in excel data in line numbers ${count}!!`,
+          401,
+        ),
+      );
+    }
+  }
+  Promise.all([
+    jsonArray.map(async (item, id) => {
+      await Series.create({
+        _id: item._id,
+        title: item.title,
+        releaseDate: +item.releaseDate,
+        description: item.description,
+        director: item.director,
+        cast: item.cast,
+        country: item.country.split(','),
+        imageUrl: {
+          imageId: item.imageId,
+          url: item.imageUrl,
+        },
+        videoUrl: {
+          videoId: item.videoId,
+          url: item.videoUrl,
+        },
+        createAt: Date.now(),
+        listCategoryId: item.listCategoryId.split(','),
+        listPackageIdBand: item.listPackageIdBand.split(','),
+      });
+    }),
+  ]);
+  await DeleteFile(req.file.path);
+  const page = 1;
+  const limit = 10;
+  const countSeries = await Series.find({ isDelete: false });
+  const series = await Series.find({ isDelete: false })
+    .sort({ createAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
+  res.status(201).json({
+    success: true,
+    data: series,
+    count: countSeries.length,
+    message: 'Create many series successfully',
   });
 });

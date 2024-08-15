@@ -1,7 +1,7 @@
 const CustomerQuestions = require('../../../models/customerQuestions');
 const ErrorResponse = require('../../../utils/errorResponse');
 const AsyncHandler = require('express-async-handler');
-const transporter = require('../../../configs/sengrid.js');
+const transporter = require('../../../configs/nodeMailer.js');
 const emailExplain = require('../../../configs/mailExplain.js');
 
 exports.postCreateCustomerQuestions = AsyncHandler(async (req, res, next) => {

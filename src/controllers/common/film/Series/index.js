@@ -108,3 +108,15 @@ exports.getAllSeriesFetchLook = async (req, res, next) => {
     message: `Get all series successfully.`,
   });
 };
+
+exports.getNewSeries = async (req, res, next) => {
+  const series = await Series.find({ isDelete: false })
+    .sort({ createAt: -1 })
+    .limit(5);
+
+  res.status(200).json({
+    data: series,
+    success: true,
+    message: `Get five new series successfully.`,
+  });
+};

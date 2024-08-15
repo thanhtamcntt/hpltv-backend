@@ -48,11 +48,9 @@ const User = new Schema({
     type: String,
     required: true,
     enum: ['superAdmin', 'admin'],
+    default: 'admin',
   },
   createAt: {
-    type: Date,
-  },
-  updateAt: {
     type: Date,
   },
 });

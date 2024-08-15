@@ -50,18 +50,16 @@ exports.getAllOrderFromPage = AsyncHandler(async (req, res, next) => {
 });
 
 exports.getAllOrderFetchLook = async (req, res, next) => {
-  console.log(req.query);
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
-  const name = req.query.name;
+  const firstName = req.query.firstName;
+  const lastName = req.query.lastName;
   const package = req.query.package;
   let count, order;
   const subscriber = await Subscriber.find(
     {
-      $or: [
-        { firstName: { $regex: `.*${name}.*`, $options: 'i' } },
-        { lastName: { $regex: `.*${name}.*`, $options: 'i' } },
-      ],
+      firstName: { $regex: `.*${firstName}.*`, $options: 'i' },
+      lastName: { $regex: `.*${lastName}.*`, $options: 'i' },
     },
     '_id',
   );

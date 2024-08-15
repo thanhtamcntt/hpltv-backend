@@ -51,6 +51,9 @@ const Subscriber = new Schema({
     time: {
       type: Date,
     },
+    resend: {
+      type: Date,
+    },
   },
   password: {
     type: String,

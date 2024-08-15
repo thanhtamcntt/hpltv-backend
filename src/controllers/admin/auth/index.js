@@ -7,11 +7,12 @@ const hashToken = require('../../../helpers/signJwtTokenUser.js');
 const path = require('path');
 const fs = require('fs');
 const Subscriber = require('../../../models/subscriber.js');
+const generator = require('generate-password');
+const emailResetPasswordTemplate = require('../../../configs/mailResetPassword.js');
 
 exports.postLogin = AsyncHandler(async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log(errors.array()[0].msg);
     return next(new ErrorResponse(errors.array()[0].msg, 401));
   }
 
@@ -51,9 +52,7 @@ exports.postSignup = AsyncHandler(async (req, res, next) => {
   const user = await JSON.parse(
     fs.readFileSync(path.join(__dirname, '../../../assets/user.json')),
   );
-  console.log(user);
   user.forEach(async (item, id) => {
-    console.log('index', id, item);
     const hashPassword = await bcrypt.hash(item.password, 12);
 
     if (id === 0) {
@@ -83,9 +82,6 @@ exports.postSignup = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postResetPassword = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
-  const hashPassword = await bcrypt.hash('123456', 12);
-  console.log(hashPassword);
   let user;
   if (req.body.type === 'user') {
     user = await User.findById(req.body.userId);
@@ -101,8 +97,24 @@ exports.postResetPassword = AsyncHandler(async (req, res, next) => {
       ),
     );
   }
+  const password = generator.generate({
+    length: 8,
+    numbers: true,
+    symbols: true,
+    lowercase: true,
+    uppercase: true,
+  });
+
+  const hashPassword = await bcrypt.hash(password, 12);
   user.password = hashPassword;
   await user.save();
+  transporter.sendMail({
+    from: `Showhub ${process.env.EMAIL_USERNAME}`,
+    to: user.email,
+    subject: 'Requires reset password Showhub account',
+    html: emailResetPasswordTemplate(user.firstName + user.lastName, password),
+  });
+
   res.status(200).json({
     success: true,
     newPassword: hashPassword,
@@ -111,7 +123,6 @@ exports.postResetPassword = AsyncHandler(async (req, res, next) => {
 });
 
 exports.deleteUser = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
   if (req.body.type === 'user') {
     await User.findByIdAndDelete(req.body.userId);
   } else {

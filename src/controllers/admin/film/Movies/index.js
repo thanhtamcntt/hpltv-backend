@@ -1,5 +1,4 @@
 const Movies = require('../../../../models/movies');
-const Package = require('../../../../models/package');
 const ErrorResponse = require('../../../../utils/errorResponse');
 const AsyncHandler = require('express-async-handler');
 const { deleteImageCloud } = require('../../../../helpers/uploadImage');
@@ -12,17 +11,16 @@ exports.postCreateMovies = AsyncHandler(async (req, res, next) => {
   if (
     !req.files['imageUrl'] ||
     !req.files['videoUrl'] ||
-    !req.files['imageUrlBanner']
+    !req.files['videoTrailerUrl']
   ) {
     return next(
       new ErrorResponse(`Please enter a valid file image and video`, 404),
     );
   }
 
-  console.log(req.files['imageUrl'], req.files['videoUrl']);
-  const infoImageBanner = {
-    imageId: req.files['imageUrlBanner'][0].filename,
-    url: req.files['imageUrlBanner'][0].path,
+  const infoVideoTrailer = {
+    videoId: req.files['videoTrailerUrl'][0].filename,
+    url: req.files['videoTrailerUrl'][0].path,
   };
   const infoImage = {
     imageId: req.files['imageUrl'][0].filename,
@@ -51,13 +49,13 @@ exports.postCreateMovies = AsyncHandler(async (req, res, next) => {
     cast: req.body.cast,
     country: req.body.country.split(','),
     duration: resultDuration,
-    imageUrlBanner: infoImageBanner,
+    videoTrailerUrl: infoVideoTrailer,
     imageUrl: infoImage,
     videoUrl: infoVideo,
     createAt: Date.now(),
     listCategoryId: req.body.listCategoryId.split(','),
+    listPackageIdBand: req.body.listPackageIdBand.split(','),
   });
-
   if (!movies) {
     return next(
       new ErrorResponse(
@@ -96,7 +94,7 @@ exports.postDeleteMovies = AsyncHandler(async (req, res, next) => {
     await movies.save();
   } else {
     await deleteImageCloud(movies.imageUrl.imageId);
-    await deleteImageCloud(movies.imageUrlBanner.imageId);
+    await deleteVideoCloud(movies.videoTrailerUrl.videoId);
     await deleteVideoCloud(movies.videoUrl.videoId);
     await Movies.deleteOne({ _id: req.params.moviesId });
   }
@@ -108,8 +106,6 @@ exports.postDeleteMovies = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postUpdateMovies = AsyncHandler(async (req, res, next) => {
-  console.log('req.params', req.params.moviesId);
-
   const movies = await Movies.findById(req.params.moviesId);
 
   if (!movies) {
@@ -117,15 +113,13 @@ exports.postUpdateMovies = AsyncHandler(async (req, res, next) => {
       new ErrorResponse(`Cannot find movies id ${req.params.moviesId}!!`, 401),
     );
   }
-  console.log(movies);
-  console.log('chuẩn chưa: ', req.files['imageUrlBanner']);
 
-  let infoImageBanner, infoImage, infoVideo, duration, resultDuration;
-  if (req.files['imageUrlBanner']) {
-    await deleteImageCloud(movies.imageUrlBanner.imageId);
-    infoImageBanner = {
-      imageId: req.files['imageUrlBanner'][0].filename,
-      url: req.files['imageUrlBanner'][0].path,
+  let infoVideoTrailer, infoImage, infoVideo, duration, resultDuration;
+  if (req.files['videoTrailerUrl']) {
+    let delete1 = await deleteVideoCloud(movies.videoTrailerUrl.videoId);
+    infoVideoTrailer = {
+      videoId: req.files['videoTrailerUrl'][0].filename,
+      url: req.files['videoTrailerUrl'][0].path,
     };
   }
   if (req.files['imageUrl']) {
@@ -150,13 +144,13 @@ exports.postUpdateMovies = AsyncHandler(async (req, res, next) => {
   }
 
   movies.title = req.body.title;
-  movies.releaseDate = req.body.releaseDate;
+  movies.releaseDate = +req.body.releaseDate;
   movies.description = req.body.description;
   movies.director = req.body.director;
   movies.cast = req.body.cast;
   movies.country = req.body.country.split(',');
-  if (req.files['imageUrlBanner']) {
-    movies.imageUrlBanner = infoImageBanner;
+  if (req.files['videoTrailerUrl']) {
+    movies.videoTrailerUrl = infoVideoTrailer;
   }
   if (req.files['imageUrl']) {
     movies.imageUrl = infoImage;
@@ -165,8 +159,14 @@ exports.postUpdateMovies = AsyncHandler(async (req, res, next) => {
     movies.videoUrl = infoVideo;
     movies.duration = resultDuration;
   }
+
   movies.listCategoryId = req.body.listCategoryId.split(',');
-  await movies.save();
+  movies.listPackageIdBand = req.body.listPackageIdBand.split(',');
+  try {
+    await movies.save();
+  } catch (error) {
+    console.error('Error saving movie:', error);
+  }
 
   res.status(201).json({
     success: true,
@@ -275,8 +275,8 @@ exports.postAddManyMovies = AsyncHandler(async (req, res, next) => {
       jsonArray[i].description === '' ||
       jsonArray[i].imageId === '' ||
       jsonArray[i].imageUrl === '' ||
-      jsonArray[i].imageBannerId === '' ||
-      jsonArray[i].imageBannerUrl === '' ||
+      jsonArray[i].videoTrailerId === '' ||
+      jsonArray[i].videoTrailerUrl === '' ||
       jsonArray[i].videoId === '' ||
       jsonArray[i].videoUrl === '' ||
       jsonArray[i].releaseDate === '' ||
@@ -309,9 +309,9 @@ exports.postAddManyMovies = AsyncHandler(async (req, res, next) => {
           imageId: item.imageId,
           url: item.imageUrl,
         },
-        imageUrlBanner: {
-          imageId: item.imageBannerId,
-          url: item.imageBannerUrl,
+        videoTrailerUrl: {
+          videoId: item.videoTrailerId,
+          url: item.videoTrailerUrl,
         },
         videoUrl: {
           videoId: item.videoId,
@@ -319,16 +319,20 @@ exports.postAddManyMovies = AsyncHandler(async (req, res, next) => {
         },
         createAt: Date.now(),
         listCategoryId: item.listCategoryId.split(','),
+        listPackageIdBand:
+          item.listPackageIdBand !== ''
+            ? item.listPackageIdBand.split(',')
+            : [],
       });
     }),
   ]);
-  console.log(count);
+
   await DeleteFile(req.file.path);
   const page = 1;
   const limit = 10;
   const countMovies = await Movies.find({ isDelete: false });
   const movies = await Movies.find({ isDelete: false })
-    .sort({ createAt: -1 })
+    .sort({ releaseDate: -1, createAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit);
   res.status(201).json({
@@ -340,7 +344,6 @@ exports.postAddManyMovies = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postRecoverMovies = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
   const movies = await Movies.findById(req.body.dataId);
 
   if (!movies) {

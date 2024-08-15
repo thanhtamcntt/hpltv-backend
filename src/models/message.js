@@ -14,7 +14,7 @@ const Message = new Schema({
     },
     adminId: {
       type: mongoose.Types.ObjectId,
-      required: true,
+      default: undefined,
       ref: 'User',
     },
   },
@@ -23,6 +23,21 @@ const Message = new Schema({
       input: {
         type: String,
         required: true,
+      },
+      file: {
+        type: {
+          type: String,
+          required: true,
+          enum: ['video', 'image'],
+        },
+        imageId: {
+          type: String,
+          required: true,
+        },
+        url: {
+          type: String,
+          required: true,
+        },
       },
       userId: {
         type: mongoose.Types.ObjectId,

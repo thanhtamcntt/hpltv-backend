@@ -10,7 +10,7 @@ const Series = new Schema({
     type: String,
     required: true,
   },
-  imageUrlBanner: {
+  imageUrl: {
     imageId: {
       type: String,
       required: true,
@@ -20,8 +20,8 @@ const Series = new Schema({
       required: true,
     },
   },
-  imageUrl: {
-    imageId: {
+  videoUrl: {
+    videoId: {
       type: String,
       required: true,
     },
