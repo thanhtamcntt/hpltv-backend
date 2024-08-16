@@ -84,7 +84,6 @@ exports.getAllSubscriberFetchLook = async (req, res, next) => {
       .skip((page - 1) * limit)
       .limit(limit),
   ]);
-  console.log(subscriber);
   res.status(200).json({
     data: subscriber,
     success: true,
@@ -127,7 +126,6 @@ exports.getSubscriberOrderTop5 = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postBannedSubscriber = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
   const subscriber = await Subscriber.findById(req.body.userId);
 
   if (!subscriber) {
@@ -144,7 +142,6 @@ exports.postBannedSubscriber = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postRecoverSubscriber = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
   const subscriber = await Subscriber.findById(req.body.userId);
 
   if (!subscriber) {

@@ -7,10 +7,9 @@ async function hashToken(user) {
     path.join(__dirname, '../../server.key'),
   );
   const token = await jwt.sign(
-    { user: user, exp: Date.now() + 3600 * 1000 * 24 },
+    { user: user, exp: Math.floor(Date.now() / 1000) + 3600 * 24 },
     serverKey,
     { algorithm: 'HS256' },
-    { expiresIn: '3600 * 24' },
   );
   return token;
 }

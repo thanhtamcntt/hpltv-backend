@@ -26,7 +26,6 @@ exports.getVerifyUserToken = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postUpdateProfile = AsyncHandler(async (req, res, next) => {
-  console.log(req.query);
   let user;
   if (req.query.user === 'user') {
     user = await User.findOne({
@@ -39,7 +38,6 @@ exports.postUpdateProfile = AsyncHandler(async (req, res, next) => {
       $or: [{ email: req.body.email }, { phoneNumber: req.body.phoneNumber }],
     });
   }
-  console.log(user);
   if (user) {
     return res.status(401).json({
       success: false,
@@ -170,7 +168,6 @@ exports.postChangeAvatarProfile = AsyncHandler(async (req, res, next) => {
   } else {
     user = await Subscriber.findById(req.user.userId);
   }
-  console.log(user);
   if (!user) {
     return next(new ErrorResponse('User not found!!', 401));
   }
@@ -212,7 +209,6 @@ exports.postDeleteAvatarProfile = AsyncHandler(async (req, res, next) => {
   if (!user) {
     return next(new ErrorResponse('User not found!!', 401));
   }
-  console.log('tới đây');
   await deleteImageCloud(req.body.imageUser.imageId);
 
   user.avatarUser.imageId = process.env.IMAGE_ID_DEFAULT;

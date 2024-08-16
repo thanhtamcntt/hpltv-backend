@@ -76,15 +76,13 @@ exports.getAllUserFetchLook = async (req, res, next) => {
 };
 
 exports.createUser = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
-
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log(errors);
     const message = errors.array()[0].msg;
     return next(new ErrorResponse(message, 401));
   }
-  console.log('tới đây0');
-
+  // const user = await User.find({ role: 'admin' });
   const password = generator.generate({
     length: 8,
     numbers: true,

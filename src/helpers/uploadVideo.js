@@ -7,7 +7,6 @@ exports.deleteVideoCloud = async (id) => {
       type: 'upload',
       resource_type: 'video',
     });
-    // console.log('Delete result:', results);
   } catch (error) {
     console.log('error delete video'.red, colors.red(error));
   }

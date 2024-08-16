@@ -3,7 +3,6 @@ const ErrorResponse = require('../../../utils/errorResponse');
 const AsyncHandler = require('express-async-handler');
 
 exports.postCreatePackage = AsyncHandler(async (req, res, next) => {
-  console.log('body created', req.body);
   const package = await Package.create({
     typePack: req.body.typePack,
     monthlyPrice: +req.body.monthlyPrice,
@@ -30,8 +29,6 @@ exports.postCreatePackage = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postUpdatePackage = AsyncHandler(async (req, res, next) => {
-  console.log('body created', req.body);
-  console.log('body created', req.params);
   const package = await Package.findById(req.params.packageId);
 
   if (!package) {
@@ -60,7 +57,6 @@ exports.postUpdatePackage = AsyncHandler(async (req, res, next) => {
 //   const paymentData = await JSON.parse(
 //     fs.readFileSync(path.join(__dirname, '../../../assets/payment.json')),
 //   );
-//   console.log(paymentData);
 //   for (let i = 0; i < paymentData.length; i++) {
 //     const package = await Package.create({
 //       typePack: paymentData[i].typePack,

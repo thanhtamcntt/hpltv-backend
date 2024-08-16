@@ -81,7 +81,6 @@ exports.postRequestCode = AsyncHandler(async (req, res, next) => {
     isBanned: false,
     'twoFactor.resend': { $lt: Date.now() },
   });
-  console.log(user);
   if (!user) {
     return next(new ErrorResponse('Not enough time to request again!!', 401));
   }
@@ -98,7 +97,6 @@ exports.postRequestCode = AsyncHandler(async (req, res, next) => {
     subject: 'Requires login authentication for your Showhub account.',
     html: emailLogin(`${user.firstName} ${user.lastName}`, code),
   });
-  console.log('vào đây');
 
   res.status(200).json({
     success: true,
@@ -274,7 +272,6 @@ exports.postNewPassword = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postVerifyToken = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
   const user = await Subscriber.findOne({
     token: req.body.resetToken,
     tokenExpiration: { $gt: Date.now() },
@@ -315,7 +312,6 @@ exports.postVerifyLogin = AsyncHandler(async (req, res, next) => {
   if (!user) {
     return next(new ErrorResponse('User does not exist!!!!', 401));
   } else {
-    console.log(user);
     user.twoFactor.auth = true;
     await user.save();
     return res.status(200).json({

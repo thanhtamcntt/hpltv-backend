@@ -125,8 +125,6 @@ exports.postUpdateFilmForSeries = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postCheckSeriesNumber = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
-  console.log(req.params);
   let film;
 
   if (req.body.type === 'update') {
@@ -165,7 +163,6 @@ exports.postCheckSeriesNumber = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postRecoverFilmForSeries = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
   const film = await FilmForSeries.findById(req.body.dataId);
 
   if (!film) {
@@ -182,7 +179,6 @@ exports.postRecoverFilmForSeries = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postAddManyFilmForSeries = AsyncHandler(async (req, res, next) => {
-  console.log(req.file.path);
   const jsonArray = await csv().fromFile(req.file.path);
   count = 0;
   Promise.all(

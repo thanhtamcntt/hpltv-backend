@@ -14,7 +14,6 @@ exports.getAllFilmForSeries = async (req, res, next) => {
 };
 
 exports.getFilmForSeriesFromNumber = async (req, res, next) => {
-  console.log('getFilmForSeriesFromNumber');
   const film = await FilmForSeries.find({
     seriesId: req.params.seriesId,
     filmSerialNumber: req.params.number,

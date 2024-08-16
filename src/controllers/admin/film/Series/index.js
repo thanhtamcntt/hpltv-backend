@@ -57,8 +57,6 @@ exports.postCreateSeries = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postDeleteSeries = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
-  console.log(req.params);
   if (!req.params.seriesId) {
     return next(
       new ErrorResponse(`Please enter a valid id series delete`, 404),
@@ -83,7 +81,6 @@ exports.postDeleteSeries = AsyncHandler(async (req, res, next) => {
     await deleteImageCloud(series.imageUrl.imageId);
     await deleteVideoCloud(series.videoUrl.videoId);
     const film = await FilmForSeries.find({ seriesId: req.params.seriesId });
-    console.log(film);
     if (film.length > 0) {
       await Promise.all(
         film.map(async (item) => {
@@ -118,7 +115,6 @@ exports.postUpdateSeries = AsyncHandler(async (req, res, next) => {
     };
   }
   if (req.files['videoTrailerUrl']) {
-    console.log(series.videoUrl.videoId);
     await deleteVideoCloud(series.videoUrl.videoId);
     infoVideoTrailer = {
       videoId: req.files['videoTrailerUrl'][0].filename,
@@ -146,7 +142,6 @@ exports.postUpdateSeries = AsyncHandler(async (req, res, next) => {
   } catch (error) {
     console.error('Error series:', error);
   }
-  console.log(series);
   res.status(201).json({
     success: true,
     data: series,

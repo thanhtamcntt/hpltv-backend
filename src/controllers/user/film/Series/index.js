@@ -80,7 +80,6 @@ exports.getSeriesCanWantToMatch = async (req, res, next) => {
 
 exports.postHandleLikeSeries = AsyncHandler(async (req, res, next) => {
   const series = await Series.findById(req.body.seriesId);
-  console.log(series);
 
   if (!series) {
     return next(
@@ -103,7 +102,6 @@ exports.postHandleLikeSeries = AsyncHandler(async (req, res, next) => {
         { new: true },
       );
     }
-    console.log(updatedDocument);
     res.status(201).json({
       success: true,
       data: updatedDocument,

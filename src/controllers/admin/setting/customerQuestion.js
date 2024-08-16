@@ -26,8 +26,6 @@ exports.postCreateCustomerQuestions = AsyncHandler(async (req, res, next) => {
 });
 
 exports.postResolveCustomerQuestions = AsyncHandler(async (req, res, next) => {
-  console.log(req.body);
-  console.log(req.params);
   const question = await CustomerQuestions.findById(
     req.params.explainId,
   ).populate('userId');
